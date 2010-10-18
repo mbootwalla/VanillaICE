@@ -1,0 +1,257 @@
+@ARTICLE{Carvalho2007,
+  author = {Benilton Carvalho and Henrik Bengtsson and Terence P Speed and Rafael
+	A Irizarry},
+  title = {{E}xploration, normalization, and genotype calls of high-density
+	oligonucleotide {SNP} array data.},
+  journal = {Biostatistics},
+  year = {2007},
+  volume = {8},
+  pages = {485--499},
+  number = {2},
+  month = {Apr},
+  abstract = {In most microarray technologies, a number of critical steps are required
+	to convert raw intensity measurements into the data relied upon by
+	data analysts, biologists, and clinicians. These data manipulations,
+	referred to as preprocessing, can influence the quality of the ultimate
+	measurements. In the last few years, the high-throughput measurement
+	of gene expression is the most popular application of microarray
+	technology. For this application, various groups have demonstrated
+	that the use of modern statistical methodology can substantially
+	improve accuracy and precision of the gene expression measurements,
+	relative to ad hoc procedures introduced by designers and manufacturers
+	of the technology. Currently, other applications of microarrays are
+	becoming more and more popular. In this paper, we describe a preprocessing
+	methodology for a technology designed for the identification of DNA
+	sequence variants in specific genes or regions of the human genome
+	that are associated with phenotypes of interest such as disease.
+	In particular, we describe a methodology useful for preprocessing
+	Affymetrix single-nucleotide polymorphism chips and obtaining genotype
+	calls with the preprocessed data. We demonstrate how our procedure
+	improves existing approaches using data from 3 relatively large studies
+	including the one in which large numbers of independent calls are
+	available. The proposed methods are implemented in the package oligo
+	available from Bioconductor.},
+  doi = {10.1093/biostatistics/kxl042},
+  keywords = {17189563},
+  owner = {rscharpf},
+  pii = {kxl042},
+  pmid = {17189563},
+  timestamp = {2007.07.07},
+  url = {http://dx.doi.org/10.1093/biostatistics/kxl042},
+}
+
+@ARTICLE{Scharpf2007,
+  author = {Robert B Scharpf and Jason C Ting and Jonathan Pevsner and Ingo Ruczinski},
+  title = {{SNP}chip: {R} classes and methods for {SNP} array data.},
+  journal = {Bioinformatics},
+  year = {2007},
+  volume = {23},
+  pages = {627--628},
+  number = {5},
+  month = {Mar},
+  abstract = {High-density single nucleotide polymorphism microarrays (SNP chips)
+	provide information on a subject's genome, such as copy number and
+	genotype (heterozygosity/homozygosity) at a SNP. While fluorescence
+	in situ hybridization and karyotyping reveal many abnormalities,
+	SNP chips provide a higher resolution map of the human genome that
+	can be used to detect, e.g., aneuploidies, microdeletions, microduplications
+	and loss of heterozygosity (LOH). As a variety of diseases are linked
+	to such chromosomal abnormalities, SNP chips promise new insights
+	for these diseases by aiding in the discovery of such regions, and
+	may suggest targets for intervention. The R package SNPchip contains
+	classes and methods useful for storing, visualizing and analyzing
+	high density SNP data. Originally developed from the SNPscan web-tool,
+	SNPchip utilizes S4 classes and extends other open source R tools
+	available at Bioconductor. This has numerous advantages, including
+	the ability to build statistical models for SNP-level data that operate
+	on instances of the class, and to communicate with other R packages
+	that add additional functionality. AVAILABILITY: The package is available
+	from the Bioconductor web page at www.bioconductor.org. SUPPLEMENTARY
+	INFORMATION: The supplementary material as described in this article
+	(case studies, installation guidelines and R code) is available from
+	http://biostat.jhsph.edu/~iruczins/publications/sm/},
+  doi = {10.1093/bioinformatics/btl638},
+  keywords = {Models, Oligonucleotide Array Sequence Analysis, Polymorphism, Single
+	Nucleotide, Software, Statistical, 17204461},
+  owner = {rscharpf},
+  pii = {btl638},
+  pmid = {17204461},
+  timestamp = {2007.05.21},
+  url = {http://dx.doi.org/10.1093/bioinformatics/btl638},
+}
+
+@ARTICLE{Scharpf2008,
+  author = {Robert B Scharpf and Giovanni Parmigiani and Jonathan Pevsner and
+	Ingo Ruczinski},
+  title = {Hidden {M}arkov models for the assessment of chromosomal alterations
+	using high-throughput {SNP} arrays},
+  journal = {Annals of Applied Statistics},
+  year = {2008},
+  volume = {2},
+  pages = {687--713},
+  number = {2},
+  url = {http://dx.doi.org/10.1214/07-AOAS155}
+}
+
+@ARTICLE{Wang2007a,
+  author = {Kai Wang and Mingyao Li and Dexter Hadley and Rui Liu and Joseph
+	Glessner and Struan F A Grant and Hakon Hakonarson and Maja Bucan},
+  title = {PennCNV: an integrated hidden Markov model designed for high-resolution
+	copy number variation detection in whole-genome SNP genotyping data.},
+  journal = {Genome Res},
+  year = {2007},
+  volume = {17},
+  pages = {1665--1674},
+  number = {11},
+  month = {Nov},
+  abstract = {Comprehensive identification and cataloging of copy number variations
+	(CNVs) is required to provide a complete view of human genetic variation.
+	The resolution of CNV detection in previous experimental designs
+	has been limited to tens or hundreds of kilobases. Here we present
+	PennCNV, a hidden Markov model (HMM) based approach, for kilobase-resolution
+	detection of CNVs from Illumina high-density SNP genotyping data.
+	This algorithm incorporates multiple sources of information, including
+	total signal intensity and allelic intensity ratio at each SNP marker,
+	the distance between neighboring SNPs, the allele frequency of SNPs,
+	and the pedigree information where available. We applied PennCNV
+	to genotyping data generated for 112 HapMap individuals; on average,
+	we detected approximately 27 CNVs for each individual with a median
+	size of approximately 12 kb. Excluding common rearrangements in lymphoblastoid
+	cell lines, the fraction of CNVs in offspring not detected in parents
+	(CNV-NDPs) was 3.3\%. Our results demonstrate the feasibility of
+	whole-genome fine-mapping of CNVs via high-density SNP genotyping.},
+  doi = {10.1101/gr.6861907},
+  keywords = {Gene Dosage; Genome, Human; Genotype; Humans; Markov Chains; Models,
+	Statistical; Polymorphism, Single Nucleotide; Variation (Genetics)},
+  owner = {gp},
+  pii = {gr.6861907},
+  pmid = {17921354},
+  timestamp = {2008.03.20},
+  url = {http://dx.doi.org/10.1101/gr.6861907}
+}
+
+@ARTICLE{Colella2007,
+  author = {Stefano Colella and Christopher Yau and Jennifer M Taylor and Ghazala
+	Mirza and Helen Butler and Penny Clouston and Anne S Bassett and
+	Anneke Seller and Christopher C Holmes and Jiannis Ragoussis},
+  title = {{Q}uanti{SNP}: an {O}bjective {B}ayes {H}idden-{M}arkov {M}odel to
+	detect and accurately map copy number variation using {SNP} genotyping
+	data.},
+  journal = {Nucleic Acids Res},
+  year = {2007},
+  volume = {35},
+  pages = {2013--2025},
+  number = {6},
+  abstract = {Array-based technologies have been used to detect chromosomal copy
+	number changes (aneuploidies) in the human genome. Recent studies
+	identified numerous copy number variants (CNV) and some are common
+	polymorphisms that may contribute to disease susceptibility. We developed,
+	and experimentally validated, a novel computational framework (QuantiSNP)
+	for detecting regions of copy number variation from BeadArray SNP
+	genotyping data using an Objective Bayes Hidden-Markov Model (OB-HMM).
+	Objective Bayes measures are used to set certain hyperparameters
+	in the priors using a novel re-sampling framework to calibrate the
+	model to a fixed Type I (false positive) error rate. Other parameters
+	are set via maximum marginal likelihood to prior training data of
+	known structure. QuantiSNP provides probabilistic quantification
+	of state classifications and significantly improves the accuracy
+	of segmental aneuploidy identification and mapping, relative to existing
+	analytical tools (Beadstudio, Illumina), as demonstrated by validation
+	of breakpoint boundaries. QuantiSNP identified both novel and validated
+	CNVs. QuantiSNP was developed using BeadArray SNP data but it can
+	be adapted to other platforms and we believe that the OB-HMM framework
+	has widespread applicability in genomic research. In conclusion,
+	QuantiSNP is a novel algorithm for high-resolution CNV/aneuploidy
+	detection with application to clinical genetics, cancer and disease
+	association studies.},
+  doi = {10.1093/nar/gkm076},
+  keywords = {Algorithms, Aneuploidy, Bayes Theorem, Chromosome Breakage, Chromosome
+	Mapping, Computational Biology, Genome, Genomics, Genotype, Human,
+	Humans, Loss of Heterozygosity, Markov Chains, Models, Polymorphism,
+	Singl, Statistical, e Nucleotide, 17341461},
+  owner = {rscharpf},
+  pii = {gkm076},
+  pmid = {17341461},
+  timestamp = {2007.07.10},
+  url = {http://dx.doi.org/10.1093/nar/gkm076}
+}
+
+@ARTICLE{Korn2008,
+  author = {Joshua M Korn and Finny G Kuruvilla and Steven A McCarroll and Alec
+	Wysoker and James Nemesh and Simon Cawley and Earl Hubbell and Jim
+	Veitch and Patrick J Collins and Katayoon Darvishi and Charles Lee
+	and Marcia M Nizzari and Stacey B Gabriel and Shaun Purcell and Mark
+	J Daly and David Altshuler},
+  title = {Integrated genotype calling and association analysis of SNPs, common
+	copy number polymorphisms and rare CNVs.},
+  journal = {Nat Genet},
+  year = {2008},
+  volume = {40},
+  pages = {1253--1260},
+  number = {10},
+  month = {Oct},
+  abstract = {Accurate and complete measurement of single nucleotide (SNP) and copy
+	number (CNV) variants, both common and rare, will be required to
+	understand the role of genetic variation in disease. We present Birdsuite,
+	a four-stage analytical framework instantiated in software for deriving
+	integrated and mutually consistent copy number and SNP genotypes.
+	The method sequentially assigns copy number across regions of common
+	copy number polymorphisms (CNPs), calls genotypes of SNPs, identifies
+	rare CNVs via a hidden Markov model (HMM), and generates an integrated
+	sequence and copy number genotype at every locus (for example, including
+	genotypes such as A-null, AAB and BBB in addition to AA, AB and BB
+	calls). Such genotypes more accurately depict the underlying sequence
+	of each individual, reducing the rate of apparent mendelian inconsistencies.
+	The Birdsuite software is applied here to data from the Affymetrix
+	SNP 6.0 array. Additionally, we describe a method, implemented in
+	PLINK, to utilize these combined SNP and CNV genotypes for association
+	testing with a phenotype.},
+  doi = {10.1038/ng.237},
+  institution = {Broad Institute of Harvard and Massachusetts Institute of Technology,
+	Cambridge, Massachusetts 02142, USA. jkorn@broad.mit.edu},
+  owner = {rscharpf},
+  pii = {ng.237},
+  pmid = {18776909},
+  timestamp = {2008.10.07},
+  url = {http://dx.doi.org/10.1038/ng.237}
+}
+
+@ARTICLE{Scharpf2010,
+  author = {Robert B Scharpf and Ingo Ruczinski and Benilton Carvalho and Betty
+	Doan and Aravinda Chakravarti and Rafael Irizarry},
+  title = {A multilevel model to address batch effects in copy number estimation
+	using SNP arrays},
+  journal={Biostatistics},
+  year = {2010},
+}
+
+
+@ARTICLE{Olshen2004,
+  author = {Adam B Olshen and E. S. Venkatraman and Robert Lucito and Michael
+	Wigler},
+  title = {Circular binary segmentation for the analysis of array-based {DNA}
+	copy number data.},
+  journal = {Biostatistics},
+  year = {2004},
+  volume = {5},
+  pages = {557-72},
+  number = {4},
+  month = {Oct},
+  abstract = {DNA sequence copy number is the number of copies of DNA at a region
+	of a genome. Cancer progression often involves alterations in DNA
+	copy number. Newly developed microarray technologies enable simultaneous
+	measurement of copy number at thousands of sites in a genome. We
+	have developed a modification of binary segmentation, which we call
+	circular binary segmentation, to translate noisy intensity measurements
+	into regions of equal copy number. The method is evaluated by simulation
+	and is demonstrated on cell line data with known copy number alterations
+	and on a breast cancer cell line data set.},
+  doi = {10.1093/biostatistics/kxh008},
+  keywords = {Breast Neoplasms, Cell Line, Computer Simulation, Female, Gene Dosage,
+	Genome, Human, Humans, Non-U.S. Gov't, Oligonucleotide Array Sequence
+	Analysis, P.H.S., Research Support, Tumor, U.S. Gov't, 15475419},
+  owner = {robscharpf},
+  pii = {5/4/557},
+  url = {http://dx.doi.org/10.1093/biostatistics/kxh008}
+}
+

@@ -1,0 +1,9 @@
+citEntry(entry="Article",
+	author="Robert B. Scharpf and Giovanni Parmigiani and Jonathan
+	Pevsner and Ingo Ruczinski",
+	title="Hidden Markov models for the assessment of chromosomal alterations using high-throughput SNP arrays",
+	journal="Annals of Applied Statistics",
+	year="2008, To appear",
+	textVersion=paste("Hidden Markov models for the assessment of chromosomal alterations using high-throughput SNP arrays", "R.B. Scharpf and G. Parmigiani and J. Pevsner
+	and I. Ruczinski", "2008, Annals of Applied Statistics, To appear")
+) 

@@ -1,0 +1,137 @@
+4/6/2009 committed Version 1.5.12
+
+* Simplified Vignette. 
+  - created a data object locusLevelData that has the basic elements required for the HMM
+    	    - matrix of genotypes
+	    - matrix of copy number
+	    - annotation data
+* Added function robustSds for computing uncertainty estimates for copy number
+  (uses MAD)
+* Changed findBreaks function to prevent calling gaps (centromeres) as altered
+  - findBreaks is not meant to be called by the user
+* Added breaks function that is a wrapper for findBreaks
+* The preferred representation of chromosome is an integer.  For the
+   sex chromosomes, 23 = X and 24=Y
+* Included reference distributions for crlmm confidence scores in the inst/extdata directory
+
+4/6/2009 committed Version 1.5.13
+
+* Added hmm.Rd file
+
+4/9/2009 committed version 1.5.14
+
+* Changed description
+
+4/28/2009 committed version 1.7.1
+
+* Fixed bug in the first figure of the vignette -- for some reason the
+  amplified state was not showing up.
+
+4/28/2009 committed version 1.7.2
+
+* edits to copynumberEmission
+
+6/18/2009 committed version 1.7.3
+
+* added 3 additional arguments to the viterbi function that allows one to
+  scale the transition probability between the hidden states:
+      - normal2altered  (scalar for transition from normal to altered state)
+      - altered2normal  (scalar for transitioning from altered to normal state)
+      - altered2altered (scalar for transitioning between to states)
+
+* the default is not to scale the transition probability
+
+* the C code now accepts the above arguments and scales the transition
+  probability accordingly
+
+* for copynumberEmission, check for zero's in copy number estimates
+    when takelog=TRUE...  change zeros to small positive value (0.05)
+    to avoid nan's
+
+6/18/2009 committed version 1.7.4
+
+* fixed a few bugs in copynumberEmission
+* added warning messages to copynumberEmission -- 
+  - inserted stop() if all values in a row are NA or all values in a column are NA
+
+6/25/2009 committed version 1.7.4
+* changed imports field require oligoClasses >= 1.6.0
+
+7/07/2009 committed version 1.7.5
+
+* rewrote vignette
+
+* added check that computed transition probabilities sum to one in the
+  viterbi function
+
+7/08/2009 committed version 1.7.6
+
+* initialStateProbs argument for viterbi can be missing
+
+* -Inf values in emission probs replaced with small negative value
+   (-50) instead of zero
+
+*  use all.equal to check sums of the transition prob. matrix
+
+
+7/08/2009 committed version 1.7.7
+
+* initialStateProbs argument for viterbi can be missing
+
+* removed sampleNames argument from breaks()
+
+7/16/2009 committed version 1.7.8
+
+* fixed documentation problems, updated vignette
+
+9/22/2009 ----- version 1.7.9
+
+* check that emission probabilities are an array in the viterbi function
+* add column for sample in 'breaks' function
+
+
+9/23/2009 ----- version 1.7.10
+
+* transitionProbability returns an error if the computed tau is
+  greater than 1.  We may therefore need to require that one do this
+  computation one chromosome at a time.  Need to debug for multiple
+  chromosomes.
+
+10/05/2009 ----- version 1.7.11
+
+* added verbose argument to viterbi function
+
+10/05/2009 ----- version 1.7.12
+
+* removed extra verbose argument from viterbi 
+
+10/06/2009 ----- version 1.7.13
+
+* for chromosome arm, define p as <= centromereEnd (instead of centromereStart)
+* by default, transitionPr = max(0.5, exp(-2*diff(position)/TAUP)).
+* updated transitionProbability help file
+svn ci -m "transitionProbability returns tau as max(0.5, exp(-2*d/TAUP)). updated help file"
+
+10/10/2009 ----- version 1.7.14
+
+* fixed bug in transitionProbability.  Returns NA in last index (arbitrary).
+
+11/10/2009 ----- version 1.9.1
+
+* fixed bug in transitionProbability for chromosome X.  
+
+02/20/2010 ----- version 1.9.2
+
+* added hmmOptions function, updated viterbi.  Updated VanillaICE vignette.
+
+* viterbi returns RangedData object (IRanges class) as well as log
+  likelihood ratio comparing the viterbi state path to the normal
+  state path
+
+04/05/2010 ----- version 1.9.4
+* added inst/test/crlmmDownstream.Rnw
+
+04/06/2010 ----- version 1.9.5
+* modified vignette.  Added help pages
+
+

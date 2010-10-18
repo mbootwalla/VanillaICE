@@ -1,0 +1,169 @@
+0.0.2 added functions.R
+0.0.5 changed SaveImage to LazyLoad
+0.0.6 change \VignetteIndexEntry in the vignette
+0.0.7 added Statistics to BiocViews.  Slight change to vignette.
+0.0.8 fixed subsetting of emission probabilities in HmmSnpSet
+0.0.9
+	-added support for confidence estimates for the 500k platform (250k Nsp and 250k Sty)
+	
+	-updated help pages for hmm, hapmapProbabilities,
+	getHapmapProbabilities, getCallEmission
+	
+	-updated callEmission to check for 'enzyme' in featureData and to
+	check that the annotation is one of the packages that we support
+
+	- added an example for callEmission
+	
+	- added a check for the callsConfidence package if the ICE option
+	is selected for the hmm
+
+0.1.0  **Migrating to allow fitting the HMM to multiple samples/multiple chromosomes **
+
+	- removed the slot predictions from the class definition of HmmSnpSet
+	- Made predictions an element of the AssayData
+	- predictions is a matrix
+	
+	- changed the "[" method for the HmmSets to subset the prediction
+	matrix appropriately
+
+	- emissionProbability and likelihood slots are matrices for one
+	experiment.  would have to store this as a list.  Probably best to
+	not store this information by default.  And only keep the matrix
+	when debugging a single sample.  Changed the class of
+	emissionProbability and likelihood to 'NullOrMatrix' and the
+	initial default to NULL.  Similarly, the default is not to keep
+	the transition probabilities.
+
+	- added arguments keepEmission, keepLikelihood, and
+	keepTransitionProb (all set to FALSE) to the hmm method
+
+	- rewrote the hmm method to run on all samples.  So for each non-X
+	chromosome, the hmm is run for all samples in the object.
+	
+	- changed default of sample argument in method hmm from NULL to
+	1:ncol(object) (by default, hmm runs on all samples)
+
+	- hmm no longer subsets when genotype values are missing, though
+	it will only run on the complete genotypes.  Where genotypes are
+	missing, the prediction will be NA.  **Could be improved**
+
+	- added argument for sample to getCopyNumberScale (default is first sample)
+	- added replacement method for "["
+	- removed scaleCopyNumber and locationCopyNumber from class definition of HmmSnpCallSet
+	- added  breakpoint methods
+	
+	- Removed the chr1 data example.  Replaced this example with
+	chromosome1 -- this example includes the predictions from the ICE
+	HMM
+
+	- the vignette now includes a comparison of the vanilla and ICE
+	HMMs fit to the simulated data in the chromosome1 example
+
+        - removed missing values in getCopyNumberScale
+	- check whether location of copy number is NULL before assigning default values
+
+	- because Illumina intensities are ratios, I added a check for
+	is.nan and removed these values
+
+	- check for is.nan in plotHmm method
+	- added argument at to plotHmm for the y-coordinates
+
+0.1.1   
+	- getCopyNumberLocation checks annotation slot.  If annotation is
+	Illumina500k, the hidden states are ratios.
+	- hmm method sets log2 slot to FALSE if annotation is Illumina500k
+
+	- default argument for arm is "both" for both hmmWrapper and hmm
+
+        - defined superclass hSet for HmmSnpSet, HmmSnpCallSet, and HmmSnpCopyNumberSet
+	- rewrote hmm to work for multiple samples/multiple chromosomes.  returns a list.
+	We now fit the hmm chromosome by chromosome to all samples in the object.
+	- method breakpoints returns physical positions (start and stop) of altered states
+
+	- fixed bug in plotHmm 
+
+	- allow different probabilities for a homozygous call for deletion
+	and copy neutral regions.  This would fix the potential problem of
+	not identifying a deletion since CRLMM can make heterozygous
+	genotype calls in regions where the copy number is not 2
+
+	- changed the class definitions of HmmSnpCallSet and HmmSnpSet by
+	having a slot for pCHOM.  This is the probability of a homozygous
+	genotype call conditional on the hidden state.  The ordering
+	should be the same as the ordering of hidden states.
+
+	- hmm is working for all three classes
+
+	- updated vignette to show an example of the hmm for each of the
+	three classes
+
+	- added a method plotBreaks that allows close up views for each of
+	the altered regions detected by the HMM -- by default, this is
+	interactive
+
+0.1.2   Fixed bug in plotBreaks
+	ad-hoc parameter for reducing number of LOH hits
+	Fit to each chromosomal arm when "both" is selected
+	breakpoints defined for hSet
+	added col.centromere and legend arguments to plotHmm
+
+0.1.3   added previous_SNP and next_SNP to .break()
+	added checks in breakspoints() to prevent an error when there are no breaks
+	removed callsConfidence from suggests and require() statements from functions.R, methods-HmmSnpCallSet, methods-HmmSnpCopyNumberSet
+
+0.1.4   replaced instances of \code{"\linkS4class{}"} with \code{\linkS4class{classname}} or \code{link{classname-class}}
+	rewrote vignette so that texi2dvi("ICE.tex", pdf=TRUE, clean=FALSE, quiet=FALSE) works without error
+
+0.1.5	fixed bug in calculating centromere coordinates
+	Depends on R-2.6.0
+	
+	removed "method" from class definitions and methods.  Added
+	callsIce and copyNumberIce to class definitions and methods
+
+	added cytobands by default for plotHmm
+
+	Depends on SNPchip >= 1.1.14 and R-2.6.0 
+
+0.1.6   
+	Depends on SNPchip >= 1.1.15:  Note that this means that ICE no
+	longer depends on oligo
+
+	Removed plots from vignette
+
+0.1.7  
+	changes to visualization functions: plotBreaks and plotHmm
+	added function locateCytoband
+	breakpoints now included cytobands for non-normal hidden states and information 
+	   about the proportion of heterozygous genotype calls, etc.
+	plotHmm adds the cytoband location above the prediction bar
+	plotBreaks method for list()
+	remove cytoband plots from vignette
+	fixed helpfile links 
+
+0.1.9  	Changed name to VanillaICE
+
+0.1.11  Changed class definitions:
+	- hSet extends SnpLevelSet (not oligoSnpSet)
+	- HmmSnpSet extends hSet (not HmmSnpCopyNumberSet and HmmSnpCallSet)
+	
+	
+ 	
+Next release:  
+
+	**getCallEmission should extract confidence scores from callsConfidence
+	AssayDataElement if the genotype calls were processed by CRLMM -
+	add a check to see if genotype calls were processed by crlmm.  -
+
+	- add a summary method (maybe based on breakpoints output?)
+	- write a function that calculates empirical estimates for HMM parameters
+
+	Add SCALE or transitionScale ... to class definition of hSet	
+
+	add more options for par and plotCytoband in plotHmm (height, mar, oma)
+
+	add options for plotCytoband in plotBreaks
+
+	rewrite plotHmm, plotBreaks, etc. 
+           -- define a core method for hSet and use callNextMethod(extensively)
+
+

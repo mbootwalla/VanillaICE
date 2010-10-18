@@ -1,0 +1,152 @@
+%\VignetteIndexEntry{VanillaICE Vignette}
+%\VignetteKeywords{copy number, genotype, SNP}
+%\VignettePackage{VanillaICE}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{color}
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{\texttt{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\R}{\textsf{R}}
+\newcommand{\crlmm}{\Rpackage{crlmm}}
+
+\textwidth=6.2in
+\textheight=8.5in
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\begin{document}
+\title{A hidden Markov model for \crlmm output}
+\author{Robert Scharpf}
+\maketitle
+
+\begin{document}
+
+<<crlmm>>=
+library(IRanges)
+library(VanillaICE)
+library(crlmm)
+celFiles <- list.celfiles("/thumper/ctsa/snpmicroarray/hapmap/raw/affy/1m", full.names=TRUE, pattern=".CEL")
+batch <- substr(basename(celFiles), 13, 13)
+celFiles <- celFiles[batch=="C" | batch=="Y"]
+batch <- batch[batch == "C" | batch == "Y"]
+outdir <- "/thumper/ctsa/beaty/scharpf/crlmmOut/hapmap"
+if(!file.exists(file.path(cnOpts[["outdir"]], "cnSet.rda"))){
+	message("Processing ...")
+	cnSet <- genotype2(celFiles, batch=batch)
+	save(cnSet, file=file.path(outdir, "cnSet.rda"))
+	cnSet <- crlmmCopynumber2(celFiles)
+} else {
+	message("Loading ...")
+	load(file.path(cnOpts[["outdir"]], "cnSet.rda"))
+	cols <- grep("nuA_", fvarLabels(cnSet))
+
+}
+@ 
+
+Remove loci for which there are missing values for the linear model
+parameters.
+
+<<removeNAs>>=
+cnSet <- cnSet[rowSums(is.na(fData(cnSet)[, cols])) == 0, ]
+@ 
+
+Compute transition and emission probabilities using the
+\Rfunction{hmmOptions}.
+
+<<hmmOptions>>=
+initialPr <- c((1-0.99)/3, (1-0.99)/3, 0.99, (1-0.99)/3)
+hmmOpts <- hmmOptions(cnSet, 
+		      copynumberStates=0:3,
+		      log.initial=log(initialPr),
+		      states=c("hom-del", "hem-del", "normal", "amp"),
+		      normalIndex=3)
+@ 
+
+The \R{} function \Rfunction{hmm} returns an object of class
+\Rclass{RangedData} with start and end coordinates of the state path
+obtained from the Viterbi algorithm.  The log likelihood ratio (LLR)
+compares the log likelihood of the predicted state sequence to the null
+(normal copy number).
+
+<<hmm>>=
+if(!any(is.na(hmmOpts[["log.emission"]]))){
+	if(!file.exists(file.path(cnOpts[["outdir"]], "fit_hmm.rda"))){
+		fit <- hmm(cnSet, hmmOpts)	
+		save(fit, file=file.path(cnOpts[["outdir"]], "fit_hmm.rda"))
+	} else{
+		load(file.path(cnOpts[["outdir"]], "fit_hmm.rda"))
+	}
+	fit
+}
+@ 
+
+%The following code chunk calculates the frequency of amplifications and
+%deletions at each locus. Shaded regions above the zero line in Figure
+%\ref{fig:hmm_hapmap} display the frequency of amplifications, whereas
+%shaded regions below the zero line graphically display the frequency of
+%hemizygous or homozygous deletions.
+%
+%<<hmm_hapmap, fig=TRUE, include=FALSE, width=8, height=7>>=
+%require(SNPchip)
+%library(RColorBrewer)
+%numberUp <- rowSums(hmmPredictions > 3, na.rm=TRUE)
+%numberDown <- -rowSums(hmmPredictions < 3, na.rm=TRUE)
+%poly.cols <- brewer.pal(7, "Accent")
+%alt.brks <- brks[brks[, "state"] != "copy.number_2", ]
+%op <- par(ask=FALSE)
+%ylim <- c(min(numberDown)-5, max(numberUp)+5)
+%xlim <- c(10*1e6, max(position(crlmmSetList)))
+%plot(position(crlmmSetList), rep(0, nrow(crlmmSetList[[1]])),
+%     type="n", xlab="Physical position (Mb)",
+%     ylim=ylim,
+%     xlim=xlim,
+%     ylab="frequency", main="Chr 22",
+%     xaxt="n",
+%     xaxs="r")
+%axis(1, at=pretty(xlim), labels=pretty(xlim)/1e6)
+%polygon(x=c(position(crlmmSetList), rev(position(crlmmSetList))),
+%	y=c(rep(0, nrow(crlmmSetList[[1]])), rev(numberUp)),
+%	col=poly.cols[3], border=poly.cols[3])
+%polygon(x=c(position(crlmmSetList), rev(position(crlmmSetList))),
+%	y=c(rep(0, nrow(crlmmSetList[[1]])), rev(numberDown)),
+%	col=poly.cols[5], border=poly.cols[5])
+%##plotCytoband(22, xlim=xlim, new=FALSE,
+%##	     label.cytoband=FALSE,
+%##	     cytoband.ycoords=c(-10, -8), xaxs="r")
+%
+%medLength <- round(median(alt.brks[, "nbases"]), 2)
+%medMarkers <- median(alt.brks[, "nprobes"])
+%sdMarkers <- round(mad(alt.brks[, "nprobes"]), 2)
+%sdsLength <- round(mad(alt.brks[, "nbases"]), 2)
+%legend("topright",
+%       bty="n",
+%       legend=c(paste("median length:", medLength, "(bp)"),
+%       paste("MAD length:", sdsLength, "(bp)"),
+%       paste("median # markers:", medMarkers),
+%       paste("MAD # markers:", sdMarkers)),
+%       cex=0.8, ncol=2)
+%legend("topleft",
+%       fill=poly.cols[c(3, 5)],
+%       legend=c("amplifications", "deletions"), bty="n")
+%par(op)
+%gc()
+%@ 
+%
+%\begin{figure}
+%  \centering
+%  \includegraphics[width=\textwidth]{copynumber-hmm_hapmap}
+%  \caption{\label{fig:hmm_hapmap} The frequency of amplifications in the
+%    hapmap samples is displayed above the zero line.  The frequency of
+%    hemizygous or homozygous deletions are displayed below the zero
+%    line.}
+%\end{figure}
+
+
+\end{document}
