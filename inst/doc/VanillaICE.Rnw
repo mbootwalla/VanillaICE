@@ -133,6 +133,7 @@ oligoSet <- new("oligoSnpSet",
 		call=locusLevelData[["genotypes"]],
 		callProbability=locusLevelData[["crlmmConfidence"]],
 		annotation=locusLevelData[["platform"]])
+oligoSet <- oligoSet[!is.na(chromosome(oligoSet)), ]
 @
 
 If confidence scores or inverse standard errors for the copy number
@@ -169,6 +170,7 @@ physical position.
 <<logscale>>=
 copyNumber(oligoSet) <- log2(copyNumber(oligoSet))
 oligoSet <- oligoSet[order(chromosome(oligoSet), position(oligoSet)), ]
+##trace(hmm.setup, browser)
 hmmOpts <- hmm.setup(oligoSet,
 		     copynumberStates=log2(c(1, 2, 2, 3)),
 		     states=c("hem-del", "ROH", "normal", "amp"),
@@ -200,7 +202,8 @@ fit.van <- hmm(oligoSet, hmmOpts)
 library(RColorBrewer)
 cols <- brewer.pal(5, "YlOrBr")[2:5]
 chr1 <- oligoSet[chromosome(oligoSet)==1,]
-fit.chr1 <- fit.van[fit.van$chrom==1, ]
+fit.chr1 <- fit.van[space(fit.van) == "chr1", ]
+##fit.chr1 <- fit.van[fit.van$chrom==1, ]
 isHet <- snpCall(chr1)==2
 par(las=1)
 plot(position(chr1), copyNumber(chr1), pch=".", cex=2, col="royalblue",
@@ -241,7 +244,7 @@ fit.ice <- hmm(oligoSet, hmmOpts)
 @
 
 <<fig3, fig=TRUE, width=8, echo=FALSE>>=
-fit.chr1 <- fit.ice[fit.ice$chrom==1, ]
+fit.chr1 <- fit.ice[space(fit.ice)=="chr1", ]
 widths <- width(fit.chr1)
 fit.chr1 <- fit.chr1[order(widths,decreasing=TRUE),]
 par(las=1)
@@ -272,6 +275,7 @@ cnSet <- new("CopyNumberSet",
 	     copyNumber=log2(locusLevelData[["copynumber"]]/100),
 	     annotation=locusLevelData[["platform"]])
 cnSet <- cnSet[order(chromosome(cnSet), position(cnSet)), ]
+cnSet <- cnSet[!is.na(chromosome(cnSet)), ]
 hmmOpts <- hmm.setup(cnSet,
 		      copynumberStates=log2(c(0, 1, 2, 3)),
 		      states=c("hom-del", "hem-del", "normal", "amp"),
@@ -316,19 +320,20 @@ snpSet <- new("SnpSet",
 featureData(snpSet) <- addFeatureAnnotation(snpSet)
 fvarLabels(snpSet)
 snpSet <- snpSet[order(chromosome(snpSet), position(snpSet)), ]
+snpSet <- snpSet[!is.na(chromosome(snpSet)), ]
 hmmOpts <- hmm.setup(snpSet,
-		      states=c("ROH", "normal"),
-		      normalIndex=2,
-		      log.initialP=rep(log(1/2), 2),
-		      prGenotypeHomozygous=c(0.99,0.7),
-		      TAUP=5e7)
+		     states=c("ROH", "normal"),
+		     normalIndex=2,
+		     log.initialP=rep(log(1/2), 2),
+		     prGenotypeHomozygous=c(0.99,0.7),
+		     TAUP=5e7)
 fit.gt <- hmm(snpSet, hmmOpts)
 @
 
 \noindent A suggested visualization:
 
 <<fig5, fig=TRUE, width=8, echo=FALSE>>=
-fit.chr1 <- fit.gt[fit.gt$chrom==1, ]
+fit.chr1 <- fit.gt[space(fit.gt)=="chr1", ]
 widths <- width(fit.chr1)
 fit.chr1 <- fit.chr1[order(widths,decreasing=TRUE),]
 gt <- ifelse(snpCall(chr1) == 1 | snpCall(chr1) == 3, 1, 0)
