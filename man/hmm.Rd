@@ -21,7 +21,7 @@ altered2altered=1, TAUP=1e8)
 
 \item{hmm.params}{List. See \code{hmm.setup}}
 
-\item{verbose}{Logical.  Whether to display all messages and warnings.}	
+\item{verbose}{Logical.  Whether to display all messages and warnings.}
 
 \item{normal2altered}{Numeric. Factor for scaling the probability of transitioning
 	      from the normal state to an altered state}
@@ -49,12 +49,12 @@ altered2altered=1, TAUP=1e8)
 }
 
 \details{
-  
+
 }
 
 \value{
 
-	An object of class \code{RangedData}.	
+	An object of class \code{RangedData}.
 
 }
 
@@ -76,8 +76,9 @@ oligoSet <- new("oligoSnpSet",
 		call=locusLevelData[["genotypes"]],
 		callProbability=locusLevelData[["crlmmConfidence"]],
 		annotation=locusLevelData[["platform"]])
+oligoSet <- oligoSet[!is.na(chromosome(oligoSet)), ]
 oligoSet <- oligoSet[order(chromosome(oligoSet), position(oligoSet)),]
-hmmOpts <- hmm.setup(oligoSet, 
+hmmOpts <- hmm.setup(oligoSet,
 		     copynumberStates=log2(c(1, 2, 2, 3)),
 		     states=c("hem-del", "ROH", "normal", "amp"),
 		     normalIndex=3,
