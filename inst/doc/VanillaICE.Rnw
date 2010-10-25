@@ -202,7 +202,7 @@ fit.van <- hmm(oligoSet, hmmOpts)
 library(RColorBrewer)
 cols <- brewer.pal(5, "YlOrBr")[2:5]
 chr1 <- oligoSet[chromosome(oligoSet)==1,]
-fit.chr1 <- fit.van[space(fit.van) == "chr1", ]
+fit.chr1 <- fit.van[fit.van$chrom == 1, ]
 ##fit.chr1 <- fit.van[fit.van$chrom==1, ]
 isHet <- snpCall(chr1)==2
 par(las=1)
@@ -244,7 +244,7 @@ fit.ice <- hmm(oligoSet, hmmOpts)
 @
 
 <<fig3, fig=TRUE, width=8, echo=FALSE>>=
-fit.chr1 <- fit.ice[space(fit.ice)=="chr1", ]
+fit.chr1 <- fit.ice[fit.ice$chrom==1, ]
 widths <- width(fit.chr1)
 fit.chr1 <- fit.chr1[order(widths,decreasing=TRUE),]
 par(las=1)
@@ -333,7 +333,7 @@ fit.gt <- hmm(snpSet, hmmOpts)
 \noindent A suggested visualization:
 
 <<fig5, fig=TRUE, width=8, echo=FALSE>>=
-fit.chr1 <- fit.gt[space(fit.gt)=="chr1", ]
+fit.chr1 <- fit.gt[fit.gt$chrom==1, ]
 widths <- width(fit.chr1)
 fit.chr1 <- fit.chr1[order(widths,decreasing=TRUE),]
 gt <- ifelse(snpCall(chr1) == 1 | snpCall(chr1) == 3, 1, 0)
