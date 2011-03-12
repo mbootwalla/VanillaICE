@@ -69,7 +69,6 @@ altered2altered=1, TAUP=1e8)
   }
 
 \examples{
-
 data(locusLevelData)
 oligoSet <- new("oligoSnpSet",
 		copyNumber=log2(locusLevelData[["copynumber"]]/100),
@@ -85,7 +84,6 @@ hmmOpts <- hmm.setup(oligoSet,
 		     log.initialP=rep(log(1/4), 4),
 		     prGenotypeHomozygous=c(0.99, 0.99, 0.7, 0.7))
 fit <- hmm(oligoSet, hmmOpts, TAUP=5e7)
-
 ## Useful accessors for RangedData
 tmp <- ranges(fit)
 start(fit)
