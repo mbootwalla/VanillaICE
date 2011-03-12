@@ -592,7 +592,7 @@ hmm.setup <- function(object,
 		message("Computing emission probabilities.")
 		if(!ICE & is(object, "oligoSnpSet")){
 			if(length(prGenotypeHomozygous) != length(states)){
-				stop("The probability of an AA or BB genotype must be specified for each state.  This specification is obtained by setting by passing a numeric vector of probabilities to the prGenotypeHomozygous argument.")
+				stop("The probability of an AA or BB genotype must be specified for each state.  This specification is obtained  by passing a numeric vector of probabilities to the prGenotypeHomozygous argument.")
 			}
 		}
 		opts <- calculateEmission(object, opts)
