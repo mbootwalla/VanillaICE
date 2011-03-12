@@ -3,7 +3,7 @@ importClassesFrom(methods, ANY, character, data.frame, "function", integer, matr
 importMethodsFrom(methods, initialize, show)
 importFrom(methods, "@<-", callNextMethod, new, validObject)
 ##importFrom(Biobase, assayDataElement, assayDataElementNames,
-##           assayDataElementReplace, assayDataNew, classVersion, validMsg) 
+##           assayDataElementReplace, assayDataNew, classVersion, validMsg)
 ##importClassesFrom(IRanges, DataFrame, RangedData, IRanges)
 ##importMethodsFrom(IRanges, Rle, start, end, width)
 ##importFrom(IRanges, IRanges, RleList, RangedData)
@@ -15,8 +15,6 @@ importFrom(methods, "@<-", callNextMethod, new, validObject)
 ##importMethodsFrom(crlmm, copyNumber, A, B)
 ##importFrom(SNPchip, integer2chromosome)
 importFrom(stats, update)
-
-
 export(hmm, hmm.setup, robustSds)
 
 ##export(calculateEmission.oligoSnpSet,
@@ -38,7 +36,7 @@ export(hmm, hmm.setup, robustSds)
 ##exportMethods(computeHmm)
 ##exportMethods(computeEmission)
 ##export(
-##       trioOptions,	
+##       trioOptions,
 ##       hmm.SnpSuperSet,
 ##       computeBpiEmission.SnpSuperSet,
 ##       isBiparental.matrix,
@@ -46,4 +44,4 @@ export(hmm, hmm.setup, robustSds)
 ##       calculateEmission.CopyNumberSet)
 
 ##export(computeHmm.CNSet)
-       
+
