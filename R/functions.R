@@ -18,6 +18,7 @@ robustSds <- function(x, takeLog=FALSE, ...){
 		sds <- apply(x, 2, "mad", ...)
 		sds <- matrix(sds, nrow(x), ncol(x), byrow=TRUE)
 	}
+	dimnames(sds) <- dimnames(x)
 	return(sds)
 }
 
