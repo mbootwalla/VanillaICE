@@ -525,7 +525,7 @@ hmm.setup <- function(object,
 		      rohStates=logical(), ## ignored unless ICE is TRUE
 		      trioHmm=FALSE,
 		       ...){  ## whether the save the emission probabilities
-	if(!class(object) %in% c("SnpSet", "CopyNumberSet", "oligoSet")){
+	if(!class(object) %in% c("SnpSet", "CopyNumberSet", "oligoSnpSet")){
 		message("class of object must be one of SnpSet, CopyNumberSet, or oligoSet")
 		stop()
 	}
