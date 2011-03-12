@@ -46,7 +46,7 @@ viterbi.wrapper <- function(log.emission,
 		    altered2altered=altered2altered,##c3
 		    as.integer(normalIndex),
 		    as.double(pAA))##normalState
-	.C("viterbi",		
+	.C("viterbi",
 	   log.emission=tmp[[1]],
 	   log.initial=tmp[[2]],
 	   tau=tmp[[3]],
@@ -78,7 +78,7 @@ getChromosomeArm <- function(object){
 		pos <- as.integer(pos)
 	}
 	data(chromosomeAnnotation, package="SNPchip", envir=environment())
-	chromosomeAnnotation <- as.matrix(chromosomeAnnotation)		
+	chromosomeAnnotation <- as.matrix(chromosomeAnnotation)
 	chrAnn <- chromosomeAnnotation
 	uchrom <- unique(SNPchip:::integer2chromosome(chrom))
 	chromosomeArm <- vector("list", length(uchrom))
@@ -89,7 +89,7 @@ getChromosomeArm <- function(object){
 	}
 	chromosomeArm <- unlist(chromosomeArm)
 	chromosomeArm <- cumsum(c(0, diff(chromosomeArm) != 0 | diff(chrom) != 0))
-	chromosomeArm <- chromosomeArm+1 ##start at 1	
+	chromosomeArm <- chromosomeArm+1 ##start at 1
 }
 
 viterbi <- function(object,
@@ -107,7 +107,7 @@ viterbi <- function(object,
 	if(normal2altered <= 0) stop("normal2altered must be > 0")
 	if(altered2normal <= 0) stop("altered2normal must be > 0")
 	if(altered2altered <= 0) stop("altered2altered must be > 0")
-	
+
 	arm <- getChromosomeArm(object)
 	normalIndex <- hmm.params[["normalIndex"]]
 	if(normalIndex < 1 | normalIndex > dim(log.E)[[3]]){
@@ -178,7 +178,7 @@ viterbi <- function(object,
 				first.index <- min(index)
 				last.index <- max(index)
 				## 6 Rules  (1 < t < T)
-				## 1.  index=1 
+				## 1.  index=1
 				## 2.  index=t
 				## 3.  index=t,t+1
 				## 4.  index=T
@@ -199,7 +199,7 @@ viterbi <- function(object,
 					logLik.vit <- sum(lP.N2A[index] + log.emission[index, thisState]) + lP.A2N[last.index+1]+log.emission[last.index+1, normalIndex]
 					logLik.null <- sum(lP.N2N[index] + log.emission[index, normalIndex]) + lP.N2N[last.index+1] + log.emission[last.index+1, normalIndex]
 					LLR[k] <- logLik.vit-logLik.null
-					next()					
+					next()
 				}
 				##if T=t+1?
 				## 3: index = t, ..., t*  , t>1, t* < T, t* != t
@@ -215,7 +215,7 @@ viterbi <- function(object,
 						sum(lP.N2N[index]) +
 						lP.N2N[last.index+1]  +
 						sum(log.emission[index, normalIndex]) +
-						log.emission[last.index+1, normalIndex] 
+						log.emission[last.index+1, normalIndex]
 					LLR[k] <- logLik.vit-logLik.null
 					next()
 				}
@@ -240,7 +240,7 @@ viterbi <- function(object,
 					logLik.null <- log.initial[normalIndex] + log.emission[first.index, normalIndex] + sum(lP.N2N[index2] + log.emission[index2, normalIndex]) ##+ lP.N2N[last.index+1] + log.emission[last.index+1, normalIndex]
 					LLR[k] <- logLik.vit-logLik.null
 					next()
-				}				
+				}
 				## 6: index = t, ...T
 				if(first.index != last.index & last.index == T){
 					index2 <- index[-1]
@@ -266,7 +266,7 @@ viterbi <- function(object,
 					      sampleId=colnames(log.E)[j],
 					      state=states,
 					      numMarkers=numMarkers,
-					      LLR=LLR)			
+					      LLR=LLR)
 		}
 		notnull <- !sapply(rD, is.null)
 		rD <- rD[notnull]
@@ -297,18 +297,18 @@ viterbi <- function(object,
 				 state=state,
 				 numMarkers=numMarkers,
 				 LLR=LLR)
-	return(rangedData)			
+	return(rangedData)
 }
 
 
 
 
-					
+
 
 ##viterbi <- function(emission,
 ##		    tau,
 ##		    arm,
-##		    initialStateProbs,		    
+##		    initialStateProbs,
 ##		    verbose=FALSE,
 ##		    chromosome,
 ##		    position,
@@ -342,11 +342,11 @@ viterbi <- function(object,
 ##		emission[is.na(emission)] <- 0
 ##	}
 ##	if(any(is.nan(emission))){
-##		message("some of the log emission probabilities are NaN.  Replacing with 0") 		
+##		message("some of the log emission probabilities are NaN.  Replacing with 0")
 ##		emission[is.nan(emission)] <- 0
 ##	}
 ##	if(any(emission < -50)){
-##		message("some of the log emission probabilities are very small -- probable outliers.  Replacing with a small value (-10)") 		
+##		message("some of the log emission probabilities are very small -- probable outliers.  Replacing with a small value (-10)")
 ##		emission[emission < -50] <- -50
 ##	}
 ##	if(missing(arm)){
@@ -385,7 +385,7 @@ viterbi <- function(object,
 ##				    altered2altered=altered2altered,##c3
 ##				    as.integer(normalIndex),
 ##				    as.double(rep(0, S^2)))##normalIndex
-##			tmp2 <- .C("viterbi",		
+##			tmp2 <- .C("viterbi",
 ##				   emission=tmp[[1]],
 ##				   initialStateProbs=tmp[[2]],
 ##				   tau=tmp[[3]],
@@ -464,7 +464,7 @@ viterbi <- function(object,
 ##					      sampleId=sampleNames[j],
 ##					      state=states,
 ##					      numMarkers=numMarkers,
-##					      LLR=LLR)			
+##					      LLR=LLR)
 ##		}
 ##		tmp <- do.call(c, rD[sapply(rD, nrow) == 1])
 ##		tmp2 <- do.call(c, rD[sapply(rD, nrow) > 1])
@@ -473,7 +473,7 @@ viterbi <- function(object,
 ##		##results <- list(stateSequence=results, logLikelihoodRatio=lrdiff)
 ##	}
 ##	rangedData <- do.call(c, rangedData)
-##	return(rangedData)		
+##	return(rangedData)
 ##}
 trioOptions <- function(opts,
 			states=c("BPI", "notBPI"),
@@ -510,7 +510,7 @@ hmm.setup <- function(object,
 		      states=paste("state", 1:length(copynumberStates), sep=""),
 		      ICE=FALSE,
 		      copyNumber=TRUE,
-		      copynumberStates=0:4,		       
+		      copynumberStates=0:4,
 		      EMIT.THR=-10,
 		      scaleSds=TRUE,
 		      verbose=TRUE,
@@ -525,6 +525,10 @@ hmm.setup <- function(object,
 		      rohStates=logical(), ## ignored unless ICE is TRUE
 		      trioHmm=FALSE,
 		       ...){  ## whether the save the emission probabilities
+	if(class(object) %in% c("SnpSet", "CopyNumberSet", "oligoSet")){
+		message("class of object must be one of SnpSet, CopyNumberSet, or oligoSet")
+		stop()
+	}
 	if(class(object) == "SnpSet") copyNumber <- FALSE
 	stopifnot(is.numeric(normalIndex))
 	if(ICE){
@@ -555,7 +559,7 @@ hmm.setup <- function(object,
 		     log.gt.emission=NULL,
 		     log.cn.emission=NULL,
 		     verbose=verbose,
-		     ...)	
+		     ...)
 	if(trioHmm){
 		opts <- trioOptions(opts)
 		offspringId <- sampleNames(object)[object$fatherId != 0 & object$motherId != 0]
@@ -565,7 +569,7 @@ hmm.setup <- function(object,
 		opts$trios <- trios
 		opts$copyNumber <- FALSE
 		##trioList <- as(object, "TrioSetList")
-	} 
+	}
 	##opts[["tau"]] <- transitionProbability(object, opts)
 	if(opts$copyNumber){
 		##check that the median copy number is near the
@@ -585,7 +589,7 @@ hmm.setup <- function(object,
 		}
 	}
 	if(!trioHmm){
-		message("Computing emission probabilities.")		
+		message("Computing emission probabilities.")
 		opts <- calculateEmission(object, opts)
 	}
 	opts
@@ -619,7 +623,7 @@ hmm.setup <- function(object,
 ##	if(missing(chromosomeAnnotation)){
 ##		if(verbose) message("chromosomeAnnotation not specified... using centromere locations from SNPchip")
 ##		data(chromosomeAnnotation, package="SNPchip", envir=environment())
-##		chromosomeAnnotation <- as.matrix(chromosomeAnnotation)		
+##		chromosomeAnnotation <- as.matrix(chromosomeAnnotation)
 ##	}
 ##	chrAnn <- chromosomeAnnotation
 ##	uchrom <- unique(integer2chromosome(chromosome))
@@ -628,13 +632,13 @@ hmm.setup <- function(object,
 ##	positionList <- positionList[match(unique(chromosome), names(positionList))]
 ##	for(i in seq(along=uchrom)){
 ##		chromosomeArm[[i]] <- as.integer(ifelse(positionList[[i]] <= chrAnn[uchrom[i], "centromereEnd"], 0, 1))
-##		##probability SNP is informative.  Note, the last index is assigned zero -- this is arbitrary.  
+##		##probability SNP is informative.  Note, the last index is assigned zero -- this is arbitrary.
 ##		tau[[i]] <- c(exp(-2 * diff(positionList[[i]])/TAUP), NA)
 ##		if(any(tau[[i]] > 1, na.rm=TRUE)){
 ##			##values greater than one occur when the diff is negative.
 ##			stop("check that the physical position is ordered from smallest to largest")
 ##		}
-##		if(any(tau[[i]] < 0, na.rm=TRUE)) stop("some of the computed transition probabilities less than zero.")		
+##		if(any(tau[[i]] < 0, na.rm=TRUE)) stop("some of the computed transition probabilities less than zero.")
 ##	}
 ##	chromosomeArm <- unlist(chromosomeArm)
 ##	chromosomeArm <- cumsum(c(0, diff(chromosomeArm) != 0 | diff(chromosome) != 0))
@@ -651,7 +655,7 @@ hmm.setup <- function(object,
 ##	return(annotation)
 ##}
 
-	
+
 ##Code this in C
 viterbiR <- function(emission, initialP, tau, arm){
 ##	emission: log emission probabilities
@@ -675,13 +679,13 @@ viterbiR <- function(emission, initialP, tau, arm){
 		}
 ##		AA <- matrix(NA, nr=S, nc=S)
 ##		for(i in 1:S){
-		AA <- matrix(tau[t-1], nr=S, nc=S)  
+		AA <- matrix(tau[t-1], nr=S, nc=S)
 		epsilon <- (1-tau[t-1])/(S-1)
-		##eNormal <- (1-tauNormal[t-1])/(S-1)		
+		##eNormal <- (1-tauNormal[t-1])/(S-1)
 		AA[upper.tri(AA)] <- AA[lower.tri(AA)] <- epsilon
 		##AA[normalIndex, ] <- rep(eNormal, S)
 		##AA[normalIndex, normalIndex] <- tauNormal[t-1]
-		AA <- log(AA*tau.scale)  
+		AA <- log(AA*tau.scale)
 		for(j in 1:S){
 			tmp <- delta[t-1, ] + AA[, j]
 			delta[t, j] <- max(tmp) + emission[t, j]
@@ -731,7 +735,7 @@ hmm <- function(object, hmm.params, ...){
 ##		ice=FALSE,
 ##		envir,
 ##		normalIndex){
-##	if(missing(envir)) envir <- new.env()	
+##	if(missing(envir)) envir <- new.env()
 ##	if(!all(c("position", "chromosome") %in% fvarLabels(object))){
 ##		stop("'position' and 'chromosome' must be in fvarLabels(object), or transitionPr must be provided")
 ##	}
@@ -764,7 +768,7 @@ hmm <- function(object, hmm.params, ...){
 ##	if(takeLog){
 ##		copyNumber(object) <- log2(copyNumber(object))
 ##		mu <- log2(mu)
-##	}		
+##	}
 ##	if(verbose) message("Calculating emission probabilities")
 ##	calculateEmission(object=object,
 ##			  mu=mu,
@@ -786,12 +790,12 @@ hmm <- function(object, hmm.params, ...){
 ##				  arm=arm,
 ##				  verbose=verbose,
 ##				  normalIndex=normalIndex)
-##	dimnames(viterbiResults) <- list(featureNames(object), sampleNames(object))	
+##	dimnames(viterbiResults) <- list(featureNames(object), sampleNames(object))
 ##	if(returnSegments){
 ##		viterbiResults <- breaks(x=viterbiResults,
 ##					 states=states,
 ##					 position=position(object),
-##					 chromosome=chromosome(object),	
+##					 chromosome=chromosome(object),
 ##					 verbose=verbose)
 ##	}
 ##	return(viterbiResults)
@@ -809,11 +813,11 @@ setMethod("update", "environment", function(object, ...){
 	    TAUP=object[["TAUP"]],
 	    verbose=object[["verbose"]],
 	    ice=object[["ice"]],
-	    envir=object)	
+	    envir=object)
 })
-	
+
 findFatherMother <- function(offspringId, object){
-	stopifnot(!missing(offspringId)) 
+	stopifnot(!missing(offspringId))
 	family.id <- pData(object)[sampleNames(object) == offspringId, "familyId"]
 	father.id <- pData(object)[sampleNames(object) == offspringId, "fatherId"]
 	mother.id <- pData(object)[sampleNames(object) == offspringId, "motherId"]
