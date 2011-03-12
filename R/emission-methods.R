@@ -20,14 +20,16 @@ calculateEmission.copynumber <- function(object, hmmOptions){
 	}
 	emission.cn <- array(NA, dim=c(nrow(object), ncol(object), S))
 	if(!is.matrix(cnStates))
-		cnStates <- matrix(cnStates, nrow(object), length(cnStates), byrow=TRUE)	
+		cnStates <- matrix(cnStates, nrow(object), length(cnStates), byrow=TRUE)
 	for(j in 1:ncol(object)){
 		cn <- matrix(CN[, j], nrow(object), ncol(cnStates))
 		sd <- matrix(sds[, j], nrow(object), ncol(cnStates))
 		k <- which(!is.na(as.numeric(cn)))
 		##emission.cn <- rep(NA, length(as.vector(cnStates)))
 		tmp <- rep(NA, length(as.numeric(cnStates)))
-		tmp[k] <- dnorm(as.numeric(cn)[k], as.numeric(cnStates)[k], as.numeric(sd)[k])
+		tmp[k] <- dnorm(x=as.numeric(cn)[k],
+				mean=as.numeric(cnStates)[k],
+				sd=as.numeric(sd)[k])
 		emission.cn[, j, ] <- tmp
 	}
 	dimnames(emission.cn) <- list(featureNames(object),
@@ -45,7 +47,7 @@ calculateEmission.CopyNumberSet <- function(object, hmmOptions){
 		message("cnConfidence missing.  Using MAD")
 		sds <- robustSds(copyNumber(object))
 		cnConfidence(object) <- 1/sds
-	} 
+	}
 	log.emission <- calculateEmission.copynumber(object,
 						     hmmOptions)
 	if(any(is.na(log.emission))){
@@ -53,9 +55,9 @@ calculateEmission.CopyNumberSet <- function(object, hmmOptions){
 		log.emission[is.na(log.emission)] <- 0
 	}
 	if(any(log.emission < EMIT.THR)){
-		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.") 		
+		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.")
 		log.emission[log.emission < EMIT.THR] <- EMIT.THR
-	}	
+	}
 	hmmOptions[["log.emission"]] <- log.emission
 	hmmOptions
 }
@@ -93,9 +95,9 @@ calculateEmission.SnpSet <- function(object, hmmOptions){
 		log.emission[is.na(log.emission)] <- 0
 	}
 	if(any(log.emission < EMIT.THR)){
-		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.") 		
+		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.")
 		log.emission[log.emission < EMIT.THR] <- EMIT.THR
-	}	
+	}
 	hmmOptions[["log.emission"]] <- log.emission
 	hmmOptions
 }
@@ -141,9 +143,9 @@ calculateEmission.oligoSnpSet <- function(object, hmmOptions){
 		log.emission[is.na(log.emission)] <- 0
 	}
 	if(any(log.emission < EMIT.THR)){
-		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.") 		
+		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.")
 		log.emission[log.emission < EMIT.THR] <- EMIT.THR
-	}	
+	}
 	hmmOptions[["log.gt.emission"]] <- log.gt.emission
 	hmmOptions[["log.cn.emission"]] <- log.cn.emission
 	hmmOptions[["log.emission"]] <- log.emission
@@ -154,7 +156,7 @@ setMethod("calculateEmission", "CopyNumberSet",
 	  function(object, hmmOptions){
 		  calculateEmission.CopyNumberSet(object, hmmOptions)
 	  })
-	
+
 
 setMethod("calculateEmission", "oligoSnpSet",
 	  function(object, hmmOptions){
@@ -204,7 +206,7 @@ calculateEmission.genotype <- function(object, hmmOptions){
 	prGenotypeMissing <- hmmOptions[["prGenotypeMissing"]]
 	verbose <- hmmOptions[["verbose"]]
 	stopifnot(length(p) == length(states))
-	if(!is.numeric(calls(object))) stop("genotypes must be integers (1=AA, 2=AB, 3=BB) or NA (missing)")	
+	if(!is.numeric(calls(object))) stop("genotypes must be integers (1=AA, 2=AB, 3=BB) or NA (missing)")
 	GT <- calls(object)
 	emission <- array(GT, dim=c(nrow(GT), ncol(GT), length(states)), dimnames=list(featureNames(object), sampleNames(object), states))
 	missingGT <- any(is.na(GT))
@@ -284,7 +286,7 @@ genotypeEmissionCrlmm <- function(object, hmmOptions){
 	hapmapP[, 2] <- 1-exp(-hapmapP[, 2]/1000)
 	##p = 1-exp(-X/1000)
 	##1000*log(1-p)=X
-	##confidence <- 1-exp(-GTconf/1000)	
+	##confidence <- 1-exp(-GTconf/1000)
 	i11 <- hapmapP[, 1] == 3  ##called homozygous truth homozygous
 	i12 <- hapmapP[, 1] == 4  ##called homozygous truth heterozygous
 	i21 <- hapmapP[, 1] == 1  ##called het truth hom
@@ -297,12 +299,12 @@ genotypeEmissionCrlmm <- function(object, hmmOptions){
 	##distribution of observed call probabilities when the call is homozygous
 	##-------------------------------------------------------------------------
 	##-------------------------------------------------------------------------
-	##P(phat | LOH, gte)  
-	##-------------------------------------------------------------------------	
+	##P(phat | LOH, gte)
+	##-------------------------------------------------------------------------
 	##GT <- as.integer(genotypes)
 	##confidence <- as.numeric(confidence)
 	confidence <- as.numeric(GTconf)
-	pTruthIsNormal <- pTruthIsRoh <- rep(NA, length(GT))	
+	pTruthIsNormal <- pTruthIsRoh <- rep(NA, length(GT))
 	confidence[confidence==0] <- 0.01 ##Otherwise, NA's result
 	hom <- which(GT == 1 | GT == 3)
 	observedPcalledHom <- cut(confidence[hom], breaks=f11$x, labels=FALSE)
@@ -312,8 +314,8 @@ genotypeEmissionCrlmm <- function(object, hmmOptions){
 	pTruthIsRoh[het] <- f21$y[observedPcalledHet]
 	##-------------------------------------------------------------------------
 	##Calculate P(phat | Normal, HOM)
-	##-------------------------------------------------------------------------					
-	chet1 <- f22$y[cut(confidence[het], breaks=f22$x, labels=FALSE)] 
+	##-------------------------------------------------------------------------
+	chet1 <- f22$y[cut(confidence[het], breaks=f22$x, labels=FALSE)]
 	chet2 <- f21$y[cut(confidence[het], breaks=f21$x, labels=FALSE)]
 	##term5[1]=P(true genotype is HET | genotype call is AB, state is normal)
 	pTruthIsNormal[het] <- chet1*pHetCalledHet + chet2*(1-pHetCalledHet)
@@ -332,12 +334,12 @@ genotypeEmissionCrlmm <- function(object, hmmOptions){
 	fLoh[het] <- (1-pHomInRoh) * pTruthIsRoh[het]
 	f <- array(NA, dim=c(nrow(object), ncol(object), 2), dimnames=list(featureNames(object),
 							     sampleNames(object),
-							     c("normal", "ROH")))	
+							     c("normal", "ROH")))
 	f[, , "normal"] <- matrix(fNormal, nrow(object), ncol(object))
 	f[, , "ROH"] <- matrix(fLoh, nrow(object), ncol(object))
 	f[f  == 0] <- min(f[f > 0], na.rm=TRUE)
 	f <- log(f)
-	return(f)	
+	return(f)
 }
 
 hmm.SnpSuperSet <- function(object, hmmOptions){
@@ -381,7 +383,7 @@ hmm.SnpSuperSet <- function(object, hmmOptions){
 		rD <- c(do.call(c, rD[L == 1]), do.call(c, rD[L > 1]))
 	} else {
 		rD <- do.call(c, rD)
-	}	
+	}
 	return(rD)
 }
 ##		vitResults <- viterbi(initialStateProbs=log(initialP),
@@ -461,17 +463,17 @@ computeBpiEmission.SnpSuperSet <- function(object, hmmOptions, isBPI){
 		I <- as.integer(pCrlmm < (1 - prGtError[["BPI"]]))
 		pCrlmm <- pCrlmm*I + (1 - prGtError[["BPI"]])*(1-I)
 		emission[,  "BPI"] <- pCrlmm
-		##Pr(mendelian inconsistency | BPI) = 0.001 
+		##Pr(mendelian inconsistency | BPI) = 0.001
 		emission[, "BPI"] <- 1 - pCrlmm
 	} else { ##ignore confidence scores
 		##Pr(call is consistent with biparental inheritance | BPI) = 0.999
 		emission[isBPI==TRUE,  "BPI"] <-  1-prGtError["BPI"]
-		##Pr(mendelian inconsistency | BPI) = 0.001 
+		##Pr(mendelian inconsistency | BPI) = 0.001
 		emission[isBPI==FALSE, "BPI"] <- prGtError["BPI"] ##Mendelian inconsistancy
 	}
-	##Pr(call is consistent with biparental inheritance | not BPI) = 0.01 		
+	##Pr(call is consistent with biparental inheritance | not BPI) = 0.01
 	emission[isBPI==TRUE,  "notBPI"] <- prGtError["notBPI"]   ## biparental inheritance, but true state is not Biparental
-	##Pr(mendelian inconsistency | not BPI) = 0.99 				
+	##Pr(mendelian inconsistency | not BPI) = 0.99
 	emission[isBPI==FALSE, "notBPI"] <- 1-prGtError["notBPI"] ## Mendelian inconsistancy
 	log.emission <- log(emission)
 	return(log.emission)
@@ -498,7 +500,7 @@ isBiparental.matrix <- function(object, allowHetParent=TRUE){
 	F <- object[, 1]
 	M <- object[, 2]
 	O <- object[, 3]
-	##M/F AA, F/M BB, O AB 
+	##M/F AA, F/M BB, O AB
 	##isHet <- offspringHeterozygous(object)  ##offspring is heterozygous
 	biparental <- rep(NA, nrow(object))
 	biparental[F==1 & M == 3 & O == 2] <- TRUE#Pr(O | biparental)=1-0.001, Pr(O | not biparental) = 0.01
@@ -572,7 +574,7 @@ calculateEmission.CNSet <- function(object, hmmOptions){
 	emissionProbs <- array(NA, dim=c(nrow(object), ncol(object), length(hmmOptions[["copynumberStates"]])))
 	dimnames(emissionProbs) <- list(featureNames(object),
 					sampleNames(object),
-					paste("copy.number_", hmmOptions[["copynumberStates"]], sep=""))	
+					paste("copy.number_", hmmOptions[["copynumberStates"]], sep=""))
 	batch <- object$batch
 	for(i in seq(along=unique(batch))){
 		emissionProbs[, batch == unique(batch)[i], ] <- getEmission(object[, batch==unique(batch)[i]], hmmOptions)
@@ -591,7 +593,7 @@ getEmission <- function(object, hmmOptions){
 	if(any(!isSnp(object))){
 		emit.nps <- getEmission.nps(object[!isSnp(object), ], hmmOptions)
 		emissionProbs[!isSnp(object), , ] <- emit.nps
-	} 
+	}
 	emissionProbs[isSnp(object), , ] <- emit.snps
 	emissionProbs
 }
@@ -614,7 +616,7 @@ getEmission.nps <- function(object, hmmOptions){
 		sds.a <- robustSds(log2(CA(object)))
 		##sds.a[sds.a < 1] <- 1
 		sds.a <- matrix(sds.a, nrow(object), ncol(object), byrow=TRUE)
-	} else sds.a <- matrix(0, nrow(object), ncol(object))	
+	} else sds.a <- matrix(0, nrow(object), ncol(object))
 	emissionProbs <- array(NA, dim=c(nrow(object),
 				   ncol(object), length(cnStates)))
 	nuA <- getParam(object, "nuA", batch)
@@ -625,7 +627,7 @@ getEmission.nps <- function(object, hmmOptions){
 	}
 	##tau2A <- getParam(object, "tau2A", batch)
 	##Assume that on the log-scale, that the background variance is the same...
-	##tau2A <- sig2A	
+	##tau2A <- sig2A
 	a <- as.numeric(log2(A(object)))
 ##	if(any(cnStates > 2)){
 ##		cnStates[cnStates > 2] <- cnStates[cnStates > 2] * 0.85
@@ -643,7 +645,7 @@ getEmission.nps <- function(object, hmmOptions){
 	}
 	emissionProbs
 }
-	
+
 
 getEmission.snps <- function(object, hmmOptions){
 	batch <- unique(object$batch)
@@ -651,7 +653,7 @@ getEmission.snps <- function(object, hmmOptions){
 	scaleSds <- hmmOptions[["scaleSds"]]
 	cnStates <- hmmOptions[["copynumberStates"]]
 	verbose <- hmmOptions[["verbose"]]
-	if(verbose) message("Computing emission probabilities for polymorphic loci.")	
+	if(verbose) message("Computing emission probabilities for polymorphic loci.")
 	if(scaleSds){
 		##a <- log2(CA(object) + CB(object))
 		##sds.a <- apply(a, 2, mad, na.rm=TRUE)
@@ -672,7 +674,7 @@ getEmission.snps <- function(object, hmmOptions){
 	sig2A <- getParam(object, "sig2A", batch)
 	sig2B <- getParam(object, "sig2B", batch)
 	tau2A <- getParam(object, "tau2A", batch)
-	tau2B <- getParam(object, "tau2B", batch)	
+	tau2B <- getParam(object, "tau2B", batch)
 	a <- as.numeric(log2(A(object)))
 	b <- as.numeric(log2(B(object)))
 	for(k in seq(along=cnStates)){
@@ -692,13 +694,13 @@ getEmission.snps <- function(object, hmmOptions){
 			sigmaA <- matrix(sigmaA, nrow=length(sigmaA), ncol=ncol(object), byrow=FALSE)
 			sigmaB <- matrix(sigmaB, nrow=length(sigmaB), ncol=ncol(object), byrow=FALSE)
 			## scale the variances by a sample-specific estimate of the variances
-			## var(I_A, ijp) = sigma_A_ip * sigma_A_jp			
+			## var(I_A, ijp) = sigma_A_ip * sigma_A_jp
 			##sigmaA <- sigmaA+sds.a
 			##sigmaB <- sigmaB+sds.a
 			sigmaA <- sigmaA*sds.a
 			sigmaB <- sigmaB*sds.a
 			meanA <- as.numeric(matrix(muA, nrow(object), ncol(object)))
-			meanB <- as.numeric(matrix(muB, nrow(object), ncol(object)))			
+			meanB <- as.numeric(matrix(muB, nrow(object), ncol(object)))
 			rho <- as.numeric(matrix(r, nrow(object), ncol(object)))
 			sd.A <- as.numeric(matrix(sigmaA, nrow(object), ncol(object)))
 			sd.B <- as.numeric(matrix(sigmaB, nrow(object), ncol(object)))

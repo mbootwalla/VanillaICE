@@ -11,7 +11,8 @@ robustSds <- function(x, takeLog=FALSE, ...){
 		sds1 <- rowMAD(x, ...)
 		sds1 <- matrix(sds1, nrow(x), ncol(x))
 		sds2 <- apply(x, 2, "mad", ...)
-		sds2 <- sds2/median(sds2, na.rm=TRUE)
+		##sds2 <- sds2/median(sds2, na.rm=TRUE)
+		sds2 <- sds2/min(sds2, na.rm=TRUE)
 		sds <- t(t(sds1) * sds2)
 	} else {
 		sds <- apply(x, 2, "mad", ...)
