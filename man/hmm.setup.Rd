@@ -24,8 +24,9 @@ hmm.setup(object, states = paste("state", 1:length(copynumberStates),
   \item{object}{
   The object must be one of the following classes inherited from
   \code{eSet} and defined in the R package oligoClasses:
-  \code{SnpSet}, \code{oligoSnpSet}, \code{CopyNumberSet}, or
-  \code{CNSet}.
+  \code{SnpSet}, \code{oligoSnpSet}, or \code{CopyNumberSet}.  Objects
+  of class \code{CNSet} defined in the crlmm package can be coerced to
+  the \code{oligoSnpSet} class.
 
 }
 
