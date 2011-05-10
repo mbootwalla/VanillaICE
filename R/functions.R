@@ -11,6 +11,7 @@ robustSds <- function(x, takeLog=FALSE, ...){
 		sds1 <- rowMAD(x, ...)
 		sds1 <- matrix(sds1, nrow(x), ncol(x))
 		sds2 <- apply(x, 2, "mad", ...)
+		df <- ncol(x)
 		##sds2 <- sds2/median(sds2, na.rm=TRUE)
 		sds2 <- sds2/min(sds2, na.rm=TRUE)
 		sds <- t(t(sds1) * sds2)
@@ -20,6 +21,28 @@ robustSds <- function(x, takeLog=FALSE, ...){
 	}
 	dimnames(sds) <- dimnames(x)
 	return(sds)
+}
+
+## many markers have a level of noise that is far greater than the
+## noise level of the sample.
+## -- though the uncertainty estimates for the marker may be poorly
+##    estimated, shrinking to the noise level of the sample may have
+##    the effect of giving uncertainty estimates for the marker that
+##    are much too small
+##
+## But if we estimate emission probabilities using a mixture of
+## normals and a uniform for the outlier distribution, we may be ok.
+robustSds2 <- function(x, DF.PRIOR=5, takeLog=FALSE, ...){
+	if(!is.matrix(x)) stop("x is not a matrix")
+	if(takeLog) x <- log2(x)
+	sds1 <- crlmm:::rowMAD(x, ...)
+	sds1 <- matrix(sds1, nrow(x), ncol(x))
+	sds2 <- apply(x, 2, "mad", constant=2, ...)
+	df <- ncol(x)
+	sds2 <- matrix(sds2, nrow(x), ncol(x), byrow=TRUE)
+	sds.star <- (sds1 * df + sds2*DF.PRIOR)/(df+DF.PRIOR)
+	dimnames(sds.star) <- dimnames(x)
+	return(sds.star)
 }
 
 viterbi.wrapper <- function(log.emission,
@@ -512,6 +535,7 @@ hmm.setup <- function(object,
 		      states=paste("state", 1:length(copynumberStates), sep=""),
 		      ICE=FALSE,
 		      copyNumber=TRUE,
+		      is.log,
 		      copynumberStates=0:4,
 		      EMIT.THR=-10,
 		      scaleSds=TRUE,
@@ -527,6 +551,7 @@ hmm.setup <- function(object,
 		      rohStates=logical(), ## ignored unless ICE is TRUE
 		      trioHmm=FALSE,
 		       ...){  ## whether the save the emission probabilities
+	if(is.missing(is.log)) stop("Must specify whether the copy number is on the log scale using the <is.log> argument.")
 	if(!class(object) %in% c("SnpSet", "CopyNumberSet", "oligoSnpSet")){
 		message("class of object must be one of SnpSet, CopyNumberSet, or oligoSet")
 		stop()
@@ -552,6 +577,7 @@ hmm.setup <- function(object,
 		     states=states,
 		     ICE=ICE,
 		     copyNumber=copyNumber,
+		     is.log=is.log,
 		     EMIT.THR=EMIT.THR,
 		     scaleSds=scaleSds,
 		     log.initial=log.initial,

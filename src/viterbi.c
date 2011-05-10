@@ -18,7 +18,7 @@ static void getIndexAndMaxVal(const double *pVec, const int len, double *pMaxVal
       *pMaxIdx = i;
       *pMaxVal = pVec[i];
     }
-  } 
+  }
 }
 
 static void getMatrixIndexAndMaxVal(const double *pMat, const int nCols, double *pMaxVal, int *pMaxIdx, const int nRows)
@@ -33,8 +33,8 @@ static void getMatrixIndexAndMaxVal(const double *pMat, const int nCols, double 
       *pMaxIdx = i;
       *pMaxVal = pMat[i*nRows];
     }
-  } 
-}
+  }
+w}
 
 /**
  * viterbi
@@ -50,9 +50,9 @@ static void getMatrixIndexAndMaxVal(const double *pMat, const int nCols, double 
  * \param c2  Pr( altered -> normal)
  * \param c3  Pr( altered -> altered)
  * \param normalState  index of normal state
- * \param pAA  
+ * \param pAA
  */
-void viterbi(double *pBeta, double *initialP, double *tau, 
+void viterbi(double *pBeta, double *initialP, double *tau,
              int  *pArm, int *S, int *T, int *pQHat, double *pDelta,
              double *c1, double*c2, double *c3, int *normalState, double *pAA)
 {
@@ -63,7 +63,7 @@ void viterbi(double *pBeta, double *initialP, double *tau,
   int nRows, nCols, *pPsi;
   int NS;
 
-  
+
   NS = *normalState - 1;
   nRows = *T;
   nCols = *S;
@@ -120,11 +120,11 @@ void viterbi(double *pBeta, double *initialP, double *tau,
 	      else   /* transitioning from an altered state */
 		{
 		  if(i == j)  /* staying in the same altered state */
-		    { 
+		    {
 		      /* c2 = scalar for transitioning from normal to altered state */
 		      *(pAA + offset) = 1 - (1 - tau[t-1]) * (*c2 + (nCols - 2) * *c3);
 		      /* *(pAA + offset) = (1-tau[t-1])/(nCols-1); */
-		    } 
+		    }
 		  else /* leaving altered state */
 		    {
 		      if(j == NS) /* going back to normal state */
@@ -138,18 +138,18 @@ void viterbi(double *pBeta, double *initialP, double *tau,
 		    }
 		}
 	      /* *(pAA + offset) = log ( *(pAA + offset) * *(tau_scale + offset) );*/
-	      *(pAA + offset) = log ( *(pAA + offset) ); 
+	      *(pAA + offset) = log ( *(pAA + offset) );
 	    }
 	}
       for (j=0; j<nCols; ++j)
 	{
 	  double maxDeltaTempSum;
 	  int maxDeltaSumIdx = 0;
-	  /* Sum the jth column of AA and the (t-1)th row of delta. 
+	  /* Sum the jth column of AA and the (t-1)th row of delta.
              The jth column of AA occupies
 	     consecutive memory locations starting at the memory location pAA + nrow(AA)*j.
 	     Since AA is a square matrix, that starting address can be
-	     expressed as pAA + nCols*j */   
+	     expressed as pAA + nCols*j */
 	  for (i=0; i<nCols; ++i)
 	    {
 	      pDeltaTempSum[i] = pAA[j * nCols + i] + pDelta[(t-1) + i * nRows];
@@ -178,11 +178,11 @@ void viterbi(double *pBeta, double *initialP, double *tau,
 	  pQHat[t] = *(pPsi + pQHat[t+1] * nRows + (t+1));
 	}
     }
- 
-  /* Array indices in R are 1-based so add one to these values. */ 
+
+  /* Array indices in R are 1-based so add one to these values. */
   for (i=0; i<nRows; ++i) {
-    pQHat[i] += 1; 
+    pQHat[i] += 1;
     if (i > 0)
-      for (j=0; j<nCols; ++j) 
+      for (j=0; j<nCols; ++j)
         pPsi[j*nRows + i] += 1;}
-}  
+}

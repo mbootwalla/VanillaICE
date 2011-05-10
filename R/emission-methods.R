@@ -38,6 +38,58 @@ calculateEmission.copynumber <- function(object, hmmOptions){
 	return(log(emission.cn))
 }
 
+calculateEmission.copynumber2 <- function(object, hmmOptions, prOutlier=0.01){
+	cnStates <- hmmOptions[["copynumberStates"]]
+	verbose <- hmmOptions[["verbose"]]
+	states <- hmmOptions[["states"]]
+	is.log <- hmmOptions[["is.log"]]
+	fn <- featureNames(object)
+	S <- length(states)
+	CN <- assayData(object)[["copyNumber"]]
+	if(any(rowSums(is.na(CN)) == ncol(CN))){
+		stop("Some rows have all missing values. Exclude these before continuing.")
+	}
+	if(any(colSums(is.na(CN)) == nrow(CN))){
+		stop("Some samples have all missing values. Exclude these samples before continuing.")
+	}
+	sds <- 1/cnConfidence(object)
+	tmp <- rowSums(!is.finite(sds))
+	if(any(sds == 0, na.rm=TRUE)){
+		warning("some sds were zero.  Replacing with typical value")
+		sds[sds == 0] <- median(sds, na.rm=TRUE)
+	}
+	emission.cn <- array(NA, dim=c(nrow(object), ncol(object), S))
+	if(!is.matrix(cnStates))
+		cnStates <- matrix(cnStates, nrow(object), length(cnStates), byrow=TRUE)
+	if(is.log){
+		MIN.CN <- -10
+		MAX.CN <- 2.5
+	} else {
+		MIN.CN <- 0
+		MAX.CN <- 10
+	}
+	for(j in 1:ncol(object)){
+		cn <- matrix(CN[, j], nrow(object), ncol(cnStates))
+		sd <- matrix(sds[, j], nrow(object), ncol(cnStates))
+		k <- which(!is.na(as.numeric(cn)))
+		##emission.cn <- rep(NA, length(as.vector(cnStates)))
+		tmp <- rep(NA, length(as.numeric(cnStates)))
+		cnvector <- as.numeric(cn)[k]
+		if(any(cnvector < MIN.CN, na.rm=TRUE) | any(cnvector > MAX.CN, na.rm=TRUE)){
+			browser()
+		}
+		tmp[k] <- (1-prOutlier) * dnorm(x=cnvector,
+						mean=as.numeric(cnStates)[k],
+						sd=as.numeric(sd)[k]) +
+			   prOutlier * dunif(cnvector, MIN.CN, MAX.CN)
+		emission.cn[, j, ] <- tmp
+	}
+	dimnames(emission.cn) <- list(featureNames(object),
+				      sampleNames(object),
+				      states)
+	return(log(emission.cn))
+}
+
 calculateEmission.CopyNumberSet <- function(object, hmmOptions){
 	EMIT.THR <- hmmOptions[["EMIT.THR"]]
 	states <- hmmOptions[["states"]]
@@ -116,8 +168,8 @@ calculateEmission.oligoSnpSet <- function(object, hmmOptions){
 	} ##else {
 	##sds <- 1/cnConfidence(object)
 ##	}
-	log.cn.emission <- calculateEmission.copynumber(object,
-							hmmOptions)
+	log.cn.emission <- calculateEmission.copynumber2(object,
+							 hmmOptions)
 	if(!ICE){
 		log.gt.emission <- calculateEmission.genotype(object, hmmOptions)
 	} else {
