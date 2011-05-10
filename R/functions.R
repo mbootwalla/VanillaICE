@@ -551,7 +551,7 @@ hmm.setup <- function(object,
 		      rohStates=logical(), ## ignored unless ICE is TRUE
 		      trioHmm=FALSE,
 		       ...){  ## whether the save the emission probabilities
-	if(is.missing(is.log)) stop("Must specify whether the copy number is on the log scale using the <is.log> argument.")
+	if(missing(is.log)) stop("Must specify whether the copy number is on the log scale using the <is.log> argument.")
 	if(!class(object) %in% c("SnpSet", "CopyNumberSet", "oligoSnpSet")){
 		message("class of object must be one of SnpSet, CopyNumberSet, or oligoSet")
 		stop()

@@ -68,20 +68,22 @@ calculateEmission.copynumber2 <- function(object, hmmOptions, prOutlier=0.01){
 		MIN.CN <- 0
 		MAX.CN <- 10
 	}
+	if(any(CN < MIN.CN, na.rm=TRUE)) CN[CN < MIN.CN] <- MIN.CN
+	if(any(CN > MAX.CN, na.rm=TRUE)) CN[CN > MAX.CN] <- MAX.CN
 	for(j in 1:ncol(object)){
 		cn <- matrix(CN[, j], nrow(object), ncol(cnStates))
 		sd <- matrix(sds[, j], nrow(object), ncol(cnStates))
 		k <- which(!is.na(as.numeric(cn)))
 		##emission.cn <- rep(NA, length(as.vector(cnStates)))
-		tmp <- rep(NA, length(as.numeric(cnStates)))
+		old.tmp <- tmp <- rep(NA, length(as.numeric(cnStates)))
 		cnvector <- as.numeric(cn)[k]
-		if(any(cnvector < MIN.CN, na.rm=TRUE) | any(cnvector > MAX.CN, na.rm=TRUE)){
-			browser()
-		}
 		tmp[k] <- (1-prOutlier) * dnorm(x=cnvector,
 						mean=as.numeric(cnStates)[k],
 						sd=as.numeric(sd)[k]) +
 			   prOutlier * dunif(cnvector, MIN.CN, MAX.CN)
+##		old.tmp[k] <- dnorm(x=cnvector,
+##				    mean=as.numeric(cnStates)[k],
+##				    sd=as.numeric(sd)[k])
 		emission.cn[, j, ] <- tmp
 	}
 	dimnames(emission.cn) <- list(featureNames(object),
@@ -100,16 +102,16 @@ calculateEmission.CopyNumberSet <- function(object, hmmOptions){
 		sds <- robustSds(copyNumber(object))
 		cnConfidence(object) <- 1/sds
 	}
-	log.emission <- calculateEmission.copynumber(object,
-						     hmmOptions)
+	log.emission <- calculateEmission.copynumber2(object,
+						      hmmOptions)
 	if(any(is.na(log.emission))){
 		if(verbose) message("Converting missing values in the emission matrix to 0")
 		log.emission[is.na(log.emission)] <- 0
 	}
-	if(any(log.emission < EMIT.THR)){
-		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.")
-		log.emission[log.emission < EMIT.THR] <- EMIT.THR
-	}
+##	if(any(log.emission < EMIT.THR)){
+##		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.")
+##		log.emission[log.emission < EMIT.THR] <- EMIT.THR
+##	}
 	hmmOptions[["log.emission"]] <- log.emission
 	hmmOptions
 }
@@ -194,10 +196,10 @@ calculateEmission.oligoSnpSet <- function(object, hmmOptions){
 		if(verbose) message("Converting missing values in the emission matrix to 0")
 		log.emission[is.na(log.emission)] <- 0
 	}
-	if(any(log.emission < EMIT.THR)){
-		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.")
-		log.emission[log.emission < EMIT.THR] <- EMIT.THR
-	}
+##	if(any(log.emission < EMIT.THR)){
+##		if(verbose) message("Minimum value in log emission probabilities is ", EMIT.THR, ".  See EMIT.THR in hmmOptions.")
+##		log.emission[log.emission < EMIT.THR] <- EMIT.THR
+##	}
 	hmmOptions[["log.gt.emission"]] <- log.gt.emission
 	hmmOptions[["log.cn.emission"]] <- log.cn.emission
 	hmmOptions[["log.emission"]] <- log.emission

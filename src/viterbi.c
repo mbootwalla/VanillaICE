@@ -34,7 +34,7 @@ static void getMatrixIndexAndMaxVal(const double *pMat, const int nCols, double 
       *pMaxVal = pMat[i*nRows];
     }
   }
-w}
+}
 
 /**
  * viterbi
