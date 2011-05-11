@@ -32,10 +32,10 @@ robustSds <- function(x, takeLog=FALSE, ...){
 ##
 ## But if we estimate emission probabilities using a mixture of
 ## normals and a uniform for the outlier distribution, we may be ok.
-robustSds2 <- function(x, DF.PRIOR=5, takeLog=FALSE, ...){
+robustSds2 <- function(x, DF.PRIOR=10, takeLog=FALSE, ...){
 	if(!is.matrix(x)) stop("x is not a matrix")
 	if(takeLog) x <- log2(x)
-	sds1 <- crlmm:::rowMAD(x, ...)
+	sds1 <- rowMAD(x, ...)
 	sds1 <- matrix(sds1, nrow(x), ncol(x))
 	sds2 <- apply(x, 2, "mad", constant=2, ...)
 	df <- ncol(x)
@@ -123,16 +123,16 @@ viterbi <- function(object,
 		    normal2altered=1,
 		    altered2normal=1,
 		    altered2altered=1,
-		    TAUP=1e8){
+		    TAUP=1e8, ...){
 	log.E <- hmm.params[["log.emission"]]
 	sns <- colnames(log.E)
 	if(is.null(sns)) stop("no dimnames for log.emission")
 	log.initial <- hmm.params[["log.initial"]]
-
+	##
 	if(normal2altered <= 0) stop("normal2altered must be > 0")
 	if(altered2normal <= 0) stop("altered2normal must be > 0")
 	if(altered2altered <= 0) stop("altered2altered must be > 0")
-
+	##
 	arm <- getChromosomeArm(object)
 	normalIndex <- hmm.params[["normalIndex"]]
 	if(normalIndex < 1 | normalIndex > dim(log.E)[[3]]){
@@ -148,7 +148,7 @@ viterbi <- function(object,
 	rangedData <- list()
 	for(j in 1:ncol(log.E)){
 		rD <- vector("list", length(unique(arm)))
-		for(a in seq(along=unique(arm))){
+		for(a in seq_along(unique(arm))){
 			I <- arm == a
 			if(sum(I) < 2) next()
 			T <- sum(I)
@@ -322,6 +322,7 @@ viterbi <- function(object,
 				 state=state,
 				 numMarkers=numMarkers,
 				 LLR=LLR)
+	rangedData <- as(rangedData, "RangedDataCn")
 	return(rangedData)
 }
 
@@ -530,14 +531,23 @@ trioOptions <- function(opts,
 ##
 ##	}
 ##})
+center <- function(x, at=2){
+	##cn <- copyNumber(object)
+	meds <- apply(x, 2, median, na.rm=TRUE)
+	x.cen <- sweep(x, 2, meds)
+	x <- x.cen + at
+	return(x)
+}
+
+
 
 hmm.setup <- function(object,
+		      copynumberStates=0:4,
 		      states=paste("state", 1:length(copynumberStates), sep=""),
 		      ICE=FALSE,
 		      copyNumber=TRUE,
-		      is.log,
-		      copynumberStates=0:4,
-		      EMIT.THR=-10,
+		      is.log=FALSE,
+		      ##EMIT.THR=-10,
 		      scaleSds=TRUE,
 		      verbose=TRUE,
 		      log.initial=log(rep(1/length(states), length(states))),
@@ -550,7 +560,7 @@ hmm.setup <- function(object,
 		      pHomInRoh=0.999, ## ignored unless ICE is TRUE
 		      rohStates=logical(), ## ignored unless ICE is TRUE
 		      trioHmm=FALSE,
-		       ...){  ## whether the save the emission probabilities
+		      ...){  ## whether the save the emission probabilities
 	if(missing(is.log)) stop("Must specify whether the copy number is on the log scale using the <is.log> argument.")
 	if(!class(object) %in% c("SnpSet", "CopyNumberSet", "oligoSnpSet")){
 		message("class of object must be one of SnpSet, CopyNumberSet, or oligoSet")
@@ -578,7 +588,7 @@ hmm.setup <- function(object,
 		     ICE=ICE,
 		     copyNumber=copyNumber,
 		     is.log=is.log,
-		     EMIT.THR=EMIT.THR,
+		     ##EMIT.THR=EMIT.THR,
 		     scaleSds=scaleSds,
 		     log.initial=log.initial,
 		     normalIndex=normalIndex,
@@ -616,7 +626,7 @@ hmm.setup <- function(object,
 			med.normal <- copynumberStates[normalIndex]
 			delta <- abs(med-med.normal)
 			if(delta < 0.1){
-				message("The absolute difference between the median copy number and copynumberState[normalIndex] is ", abs(med-med.normal))
+				if(verbose) message("The absolute difference between the median copy number and copynumberState[normalIndex] is ", abs(med-med.normal))
 			} else {
 				warning("The absolute difference between the median copy number and copynumberState[normalIndex] is ", delta)
 			}
@@ -625,6 +635,7 @@ hmm.setup <- function(object,
 	if(!trioHmm){
 		opts <- calculateEmission(object, opts)
 	}
+	opts <- as(opts, "HmmOptionList")
 	opts
 }
 
@@ -749,11 +760,12 @@ viterbiR <- function(emission, initialP, tau, arm){
 ##setMethod("hmm", "CopyNumberSet", function(object, hmmOptions){
 ##	viterbi(object, hmmOptions)
 ##})
-hmm <- function(object, hmm.params, ...){
-	if(missing(hmm.params)) stop("missing hmm.params.  See hmm.setup")
-	if(missing(object)) stop("missing object.")
-	viterbi(object, hmm.params, ...)
-}
+##setMethod("hmm", signature(object="HmmOptionList", cnSet="oligoSnpSet"),
+##hmm <- function(object, hmm.params, ...){
+##	if(missing(hmm.params)) stop("missing hmm.params.  See hmm.setup")
+##	if(missing(object)) stop("missing object.")
+##	viterbi(object, hmm.params, ...)
+##}
 
 
 ##hmm <- function(object,
@@ -869,3 +881,66 @@ findFatherMother <- function(offspringId, object){
 	names(fmo.trio) <- c("father", "mother", "offspring")
 	return(fmo.trio)
 }
+
+
+##plot <- function(df, palette, xlim, show.coverage=TRUE, blackBorder=TRUE, sampleLabels.cex=0.5, labelAllSamples=TRUE,...){
+##	stopifnot(length(unique(df$chr))==1)
+##	mykey <- simpleKey(c("homo-del", "hemi-del", "amp")[palette %in% df$col], points=FALSE,
+##		   rectangles=TRUE, col=palette[palette %in% df$col], space="top")
+##	mykey$rectangles[["border"]] <- mykey$rectangles[["col"]] <- palette[palette %in% df$col]
+##	##df$method=factor(df$method, order=TRUE)
+##	if(blackBorder) border <- rep("black", nrow(df)) else border <- df$col
+##	if(labelAllSamples) {
+##		labels <- df$id
+##		ticks.at <- df$y
+##	} else {
+##		labels <- FALSE
+##		ticks.at <- pretty(df$y)
+##	}
+##	fig <- xyplot(y~midpoint|method, data=df,
+##			    panel=function(x, y, x0, x1, chr.size,
+##			    col, border, coverage, chr, show.coverage=TRUE, max.y,
+##			    ..., subscripts){
+##				    panel.grid(h=-1, v=10)
+##				    ##yy <- factor(y, order=TRUE)
+##				    panel.xyplot(x, y, ..., subscripts)
+##				    ##yyy <- as.integer(yy)
+##				    h <- 0.75
+##				    lrect(xleft=x0[subscripts],
+##					  xright=x1[subscripts],
+##					  ybottom=y-h/2,
+##					  ytop=y+h/2,
+##					  border=border[subscripts],
+##					  col=col[subscripts], ...)
+##				    if(show.coverage)
+##					    ltext(x, y,labels=coverage[subscripts], cex=0.6)
+##				    ## plot centromere
+##				    chr <- unique(as.integer(as.character(df$chr)))
+##				    coords <- chromosomeAnnotation[chr, 1:2]/1e6
+##				    lrect(xleft=coords[1],
+##					  xright=coords[2],
+##					  ybottom=0,
+##					  ytop=max.y+h/2,
+##					  col="grey",
+##					  border="grey")
+##			    },
+##		      x0=df$x0,
+##		      x1=df$x1,
+##		      col=df$col,
+##		      border=border,
+##		      alpha=1,
+##		      chr.size=df$chr.size,
+##		      scales=list(y=list(labels=labels, at=ticks.at, cex=sampleLabels.cex)),
+##		      coverage=df$coverage,
+##		      xlab="Mb",
+##		      ylab="offspring index",
+##		      show.coverage=show.coverage,
+##		      key=mykey,
+##		      par.strip.text=list(lines=0.7, cex=0.6),
+##		      prepanel=prepanel.fxn,
+##		      xlim=xlim,
+##		      max.y=max(df$y), ...)
+####		      axis=function(side, text.cex){
+####			      panel.axis(side, text.cex=text.cex)}, ...)
+##	return(fig)
+##}

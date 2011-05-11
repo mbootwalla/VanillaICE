@@ -621,7 +621,7 @@ isBiparental.matrix <- function(object, allowHetParent=TRUE){
 ##}
 
 calculateEmission.CNSet <- function(object, hmmOptions){
-	EMIT.THR <- hmmOptions[["EMIT.THR"]]
+	##EMIT.THR <- hmmOptions[["EMIT.THR"]]
 	cnStates <- hmmOptions[["copynumberStates"]]
 	object <- object[order(chromosome(object), position(object)), ]
 	if(any(diff(position(object)) < 0)) stop("must be ordered by chromosome and physical position")
@@ -633,9 +633,9 @@ calculateEmission.CNSet <- function(object, hmmOptions){
 	for(i in seq(along=unique(batch))){
 		emissionProbs[, batch == unique(batch)[i], ] <- getEmission(object[, batch==unique(batch)[i]], hmmOptions)
 	}
-	if(EMIT.THR > -Inf){  ## truncate emission probabilities for outliers
-		emissionProbs[emissionProbs < EMIT.THR] <- EMIT.THR
-	}
+##	if(EMIT.THR > -Inf){  ## truncate emission probabilities for outliers
+##		emissionProbs[emissionProbs < EMIT.THR] <- EMIT.THR
+##	}
 	hmmOptions[["log.emission"]] <- emissionProbs
 	hmmOptions
 }
@@ -668,7 +668,6 @@ getEmission.nps <- function(object, hmmOptions){
 		##sds.a <- apply(a, 2, mad, na.rm=TRUE)
 		##sds.a <- sds.a/median(sds.a)
 		sds.a <- robustSds(log2(CA(object)))
-		##sds.a[sds.a < 1] <- 1
 		sds.a <- matrix(sds.a, nrow(object), ncol(object), byrow=TRUE)
 	} else sds.a <- matrix(0, nrow(object), ncol(object))
 	emissionProbs <- array(NA, dim=c(nrow(object),
@@ -712,7 +711,8 @@ getEmission.snps <- function(object, hmmOptions){
 		##a <- log2(CA(object) + CB(object))
 		##sds.a <- apply(a, 2, mad, na.rm=TRUE)
 		##sds.a <- sds.a/median(sds.a)
-		sds.a <- robustSds(log2(CA(object) + CB(object)))
+		##sds.a <- robustSds(log2(CA(object) + CB(object)))
+		sds.a <- robustSds2(log2(CA(object)))
 		##sds.a[sds.a < 1] <- 1
 		sds.a <- matrix(sds.a, nrow(object), ncol(object), byrow=TRUE)
 	} else sds.a <- sds.b <- matrix(0, nrow(object), ncol(object))

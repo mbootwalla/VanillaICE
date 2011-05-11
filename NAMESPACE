@@ -1,47 +1,11 @@
 useDynLib("VanillaICE", .registration=TRUE)
 importClassesFrom(methods, ANY, character, data.frame, "function", integer, matrix, numeric)
 importMethodsFrom(methods, initialize, show)
+importMethodsFrom(Biobase, sampleNames)
 importFrom(methods, "@<-", callNextMethod, new, validObject)
-##importFrom(Biobase, assayDataElement, assayDataElementNames,
-##           assayDataElementReplace, assayDataNew, classVersion, validMsg)
-##importClassesFrom(IRanges, DataFrame, RangedData, IRanges)
-##importMethodsFrom(IRanges, Rle, start, end, width)
-##importFrom(IRanges, IRanges, RleList, RangedData)
-##importClassesFrom(oligoClasses, oligoSnpSet)
-##importFrom(oligoClasses, chromosome2integer, list.celfiles)
-##importMethodsFrom(oligoClasses, chromosome, position, CA, CB)
-##importMethodsFrom(oligoClasses, copyNumber)
-
-##importMethodsFrom(crlmm, copyNumber, A, B)
-##importFrom(SNPchip, integer2chromosome)
+importFrom(graphics, plot)
 importFrom(stats, update)
-export(hmm, hmm.setup, robustSds)
+export(hmm.setup, robustSds)
+exportMethods("hmm", "nMarkers", "LLR", "state", "rd2df")
 
-##export(calculateEmission.oligoSnpSet,
-##       calculateEmission.copynumber,
-##       calculateEmission.CNSet,
-##       genotypeEmissionCrlmm,
-##       getEmission.nps,
-##       getEmission.snps,
-##       getEmission,
-##       hmm,
-##       hmmOptions,
-##       robustSds,
-##       viterbi,
-##       viterbi.wrapper,
-##       getChromosomeArm)
-##exportMethods(calculateEmission, hmm)
-
-##with crlmm output
-##exportMethods(computeHmm)
-##exportMethods(computeEmission)
-##export(
-##       trioOptions,
-##       hmm.SnpSuperSet,
-##       computeBpiEmission.SnpSuperSet,
-##       isBiparental.matrix,
-##       isBiparental.SnpSuperSet,
-##       calculateEmission.CopyNumberSet)
-
-##export(computeHmm.CNSet)
 
