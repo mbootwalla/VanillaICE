@@ -1,3 +1,9 @@
+Sweave2pdf <- function(fname, ...){
+	fname <- strsplit(fname, ".Rnw")[[1]][[1]]
+	suppressWarnings(Sweave(paste(fname, ".Rnw", sep=""), ...))
+	texi2dvi(paste(fname, ".tex", sep=""), pdf=TRUE)
+}
+
 rowMAD <- function(x, y, ...){
 	notna <- !is.na(x)
 	sds <- 1.4826*rowMedians(abs(x-rowMedians(x, ...)), ...)
@@ -35,9 +41,9 @@ robustSds <- function(x, takeLog=FALSE, ...){
 robustSds2 <- function(x, DF.PRIOR=10, takeLog=FALSE, ...){
 	if(!is.matrix(x)) stop("x is not a matrix")
 	if(takeLog) x <- log2(x)
-	sds1 <- rowMAD(x, ...)
+	sds1 <- rowMAD(x, na.rm=TRUE)
 	sds1 <- matrix(sds1, nrow(x), ncol(x))
-	sds2 <- apply(x, 2, "mad", constant=2, ...)
+	sds2 <- apply(x, 2, "mad", constant=2, na.rm=TRUE)
 	df <- ncol(x)
 	sds2 <- matrix(sds2, nrow(x), ncol(x), byrow=TRUE)
 	sds.star <- (sds1 * df + sds2*DF.PRIOR)/(df+DF.PRIOR)
@@ -539,11 +545,13 @@ trioOptions <- function(opts,
 ##
 ##	}
 ##})
-center <- function(x, at=2){
-	##cn <- copyNumber(object)
-	meds <- apply(x, 2, median, na.rm=TRUE)
-	x.cen <- sweep(x, 2, meds)
-	x <- x.cen + at
+centerCopyNumber <- function(x, centerCN=TRUE, at=2, ...){
+	if(!centerCN) return(x) ## do nothing
+	cn <- copyNumber(x)
+	meds <- apply(cn, 2, median, na.rm=TRUE)
+	cn.cen <- sweep(cn, 2, meds)
+	cn <- cn.cen + at
+	copyNumber(x) <- cn
 	return(x)
 }
 

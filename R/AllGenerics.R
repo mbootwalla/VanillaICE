@@ -11,12 +11,13 @@ setGeneric("LLR", function(object) standardGeneric("LLR"))
 setGeneric("nMarkers", function(object) standardGeneric("nMarkers"))
 setGeneric("state", function(object) standardGeneric("state"))
 setGeneric("rd2df", function(object, hmm.params, ...) standardGeneric("rd2df"))
-
 ##setGeneric("plot", useAsDefault=function(x,y,...) graphics::plot(x,y,...))
+##plot <- function(object, hmm.params, ...) UseMethod("plot")
+##plot.default <- graphics:::plot
 setGeneric("plot", function(object, hmm.params, ...) standardGeneric("plot"))
 
 setGeneric("hmm", function(object, hmm.params, ...) standardGeneric("hmm"))
-setGeneric("hmm2", function(object, hmm.params, verbose=1,...) standardGeneric("hmm2"))
+setGeneric("hmm2", function(object, hmm.params, ...) standardGeneric("hmm2"))
 
 setGeneric("snpsetClass", function(object) standardGeneric("snpsetClass"))
 setGeneric("copynumberStates", function(object) standardGeneric("copynumberStates"))
@@ -35,6 +36,8 @@ setGeneric("prHomInRoh", function(object) standardGeneric("prHomInRoh"))
 setGeneric("rohStates", function(object) standardGeneric("rohStates"))
 setGeneric("verbose", function(object) standardGeneric("verbose"))
 setGeneric("emit", function(object, hmm.params) standardGeneric("emit"))
+setGeneric("markerIndex", function(object) standardGeneric("markerIndex"))
+setGeneric("sampleIndex", function(object) standardGeneric("sampleIndex"))
 
 setGeneric("tau", function(object) standardGeneric("tau"))
 setGeneric("n2a", function(object) standardGeneric("n2a"))

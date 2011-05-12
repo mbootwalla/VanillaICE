@@ -42,9 +42,14 @@
 <<loadCnSet>>=
 library(VanillaICE)
 library(HapmapCrlmmAffySet)
+library(RColorBrewer)
 if(!exists("hapmapSet")) data(hapmapSet)
 class(hapmapSet)
 dim(hapmapSet)
+@
+
+<<echo=FALSE>>=
+setCacheDir("/nexsan2/disk3/rscharpf/VanillaICE")
 @
 
 \section{Small to moderate size datasets}
@@ -111,15 +116,15 @@ suppressWarnings(rm(sds, mads, snr, sample.index)); gc()
 
 
 <<center>>=
-copyNumber(oligoSet) <- VanillaICE:::center(copyNumber(oligoSet), at=2)
+oligoSet <- VanillaICE:::centerCopyNumber(oligoSet, at=2)
 @
 
 <<hmmOpts>>=
-hmmOpts <- VanillaICE:::newHmmOptionList(snpsetClass=class(oligoSet), verbose=1L)
+hmmOpts <- VanillaICE:::newHmmOptionList(object=oligoSet, verbose=1L)
 @
 
 <<hmm, cache=TRUE>>=
-fit <- VanillaICE:::hmm2(oligoSet, hmmOpts)
+fit <- hmm2(oligoSet, hmmOpts)
 @
 
 <<coerce2RangedDataCn>>=
@@ -128,14 +133,18 @@ fit <- as(fit, "RangedDataCn")
 
 Visualizing the results:
 
-<<results>>=
+<<plotForRangedDataCn>>=
 fig <- plot(fit, hmmOpts, show.coverage=FALSE)
 fig$x.scales[["tick.number"]] <- 20
 @
 
-<<rectanglefig,fig=TRUE>>=
+<<rectanglefig,fig=TRUE, width=8, height=8>>=
 print(fig)
 @
+
+TODO: show how the color scheme could be modified.
+
+TODO: plot method for low level data that uses locus zoom
 
 \section{Large datasets}
 
@@ -144,7 +153,7 @@ for loop.  Center and compute sds as before.  Extend to allow
 parallelization.
 
 <<clean, echo=FALSE>>=
-showWarnings(rm(oligoSet, fit, res.altered, palette, df)); gc()
+suppressWarnings(rm(oligoSet, fit, res.altered, palette, df)); gc()
 @
 
 <<reloadHapmap>>=
@@ -152,17 +161,27 @@ if(!exists("hapmapSet")) data(hapmapSet)
 @
 
 <<hmmCNSet,cache=TRUE>>=
-fit2 <- VanillaICE:::hmm2(hapmapSet, hmmOpts, centerCN=TRUE)
+fit2 <- hmm2(hapmapSet, hmmOpts)
 @
+
+TODO: test that it works for ff objects.
 
 <<coercion2RangedDataCn>>=
 fit2 <- as(fit2, "RangedDataCn")
 @
 
-<<figure>>=
-plot(fit2, xlim=c(0,145))
+<<plotmethod>>=
+fig <- plot(fit2, hmmOpts, show.coverage=FALSE)
+fig$x.scales[["tick.number"]] <- 20
 @
 
+<<rectangelfig2,fig=TRUE,width=8,height=8>>=
+print(fig)
+@
 
+\section{Session Information}
+<<sessionInfo,results=tex>>=
+toLatex(sessionInfo())
+@
 
 \end{document}

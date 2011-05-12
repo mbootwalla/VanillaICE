@@ -3,6 +3,8 @@ setValidity("RangedDataCn", function(object){
 	all(c("chrom", "sampleId", "numMarkers", "LLR") %in% colnames(object))
 })
 
+setClassUnion("NullOrNumeric", c("NULL", "numeric"))
+
 setClass("HmmOptionList",
 	 representation(snpsetClass="character",
 			copynumberStates="numeric",
@@ -24,6 +26,8 @@ setClass("HmmOptionList",
 			a2n="numeric",
 			a2a="numeric",
 			tau="numeric",
+			marker.index="NullOrNumeric",
+			sample.index="NullOrNumeric",
 			verbose="integer"))
 
 

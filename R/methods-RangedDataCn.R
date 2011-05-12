@@ -72,9 +72,9 @@ setMethod("plot", signature(object="RangedDataCn", hmm.params="HmmOptionList"),
 
 setMethod("plot", signature(object="DataFrameCN", hmm.params="missing"),
 	  function(object, ...){
-		  palette <- brewer.pal(3, "Set2")
+		  data(chromosomeAnnotation)
 		  df <- as.data.frame(object@.Data)
-		  colnames(df) <- names(object)##, "data.frame")
+		  colnames(df) <- names(object)
 		  df$x <- df$midpoint
 		  fig <- xyplot(y~x, data=df,
 				panel=my.xypanel,
@@ -85,22 +85,21 @@ setMethod("plot", signature(object="DataFrameCN", hmm.params="missing"),
 				alpha=1,
 				chr=df$chr,
 				chr.size=df$chr.size,
-				##scales=list(y=list(labels=labels, at=ticks.at, cex=sampleLabels.cex)),
 				coverage=df$coverage,
 				xlab="Mb",
 				ylab="offspring index",
-				##show.coverage=show.coverage,
 				key=getKey(df),
 				par.strip.text=list(lines=0.7, cex=0.6),
 				prepanel=prepanel.fxn,
-				max.y=max(df$y), ...)
-		  ##axis=function(side, text.cex){
-		  ##panel.axis(side, text.cex=text.cex)}, ...)
+				max.y=max(df$y),
+				chromosomeAnnotation=chromosomeAnnotation,
+				...)
 		  return(fig)
 	  })
 
 getKey <- function(df){
 	states <- unique(df$state)
+	states <- states[order(states)]
 	col <- df$col[match(states, df$state)]
 	mykey <- simpleKey(c("homo-del", "hemi-del", "normal", "single-dup", "double-dup")[states], points=FALSE,
 			   rectangles=TRUE, col=col, space="top")
@@ -113,6 +112,8 @@ my.xypanel <- function(x, y,
 		       col, border, coverage,
 		       chr, show.coverage=TRUE,
 		       max.y,
+		       chromosomeAnnotation,
+		       addCentromere=TRUE,
 		       ..., subscripts){
 	panel.grid(h=-1, v=10)
 	panel.xyplot(x, y, ..., subscripts)
@@ -126,14 +127,16 @@ my.xypanel <- function(x, y,
 	if(show.coverage)
 		ltext(x, y,labels=coverage[subscripts], cex=0.6)
 	##plot centromere
-	chr <- unique(as.integer(as.character(df$chr)))
-	coords <- chromosomeAnnotation[chr, 1:2]/1e6
-	lrect(xleft=coords[1],
-	      xright=coords[2],
-	      ybottom=0,
-	      ytop=max.y+h/2,
-	      col="grey",
-	      border="grey")
+	if(addCentromere){
+		chr <- unique(as.integer(as.character(chr)))
+		coords <- chromosomeAnnotation[chr, 1:2]/1e6
+		lrect(xleft=coords[1],
+		      xright=coords[2],
+		      ybottom=0,
+		      ytop=max.y+h/2,
+		      col="grey",
+		      border="grey")
+	}
 }
 
 prepanel.fxn <- function(x,y, chr.size, ..., subscripts){

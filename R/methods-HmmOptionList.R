@@ -1,4 +1,5 @@
-newHmmOptionList <- function(snpsetClass="oligoSnpSet",
+newHmmOptionList <- function(object,
+			     snpsetClass=class(object),
 			     copynumberStates=0:4,
 			     states=paste("state", 1:length(copynumberStates), sep=""),
 			     ICE=FALSE,
@@ -18,6 +19,8 @@ newHmmOptionList <- function(snpsetClass="oligoSnpSet",
 			     a2n=1,
 			     n2a=1,
 			     a2a=1,
+			     marker.index=NULL,
+			     sample.index=NULL,
 			     verbose=2L,
 			     ...){
 	new("HmmOptionList",
@@ -41,6 +44,8 @@ newHmmOptionList <- function(snpsetClass="oligoSnpSet",
 	    a2n=a2n,
 	    n2a=n2a,
 	    a2a=a2a,
+	    marker.index=marker.index,
+	    sample.index=sample.index,
 	    verbose=verbose)
 }
 setValidity("HmmOptionList", function(object){
@@ -57,11 +62,21 @@ setValidity("HmmOptionList", function(object){
 		if(!check) return(FALSE)
 		check <- sum(exp(log.initialPr(object))) == 1
 		if(!check) return(FALSE)
+		if(!is.null(markerIndex(object))){
+			check <- all(markerIndex(object) %in% seq(length=nrow(object)))
+			if(!check) return(FALSE)
+		}
+		if(!is.null(sampleIndex(object))){
+			check <- all(sampleIndex(object) %in% seq(length=ncol(object)))
+			if(!check) return(FALSE)
+		}
 	} else{
 		FALSE
 	}
 	TRUE
 })
+
+
 
 setMethod("snpsetClass", "HmmOptionList", function(object) object@snpsetClass)
 setMethod("copynumberStates", "HmmOptionList", function(object) object@copynumberStates)
@@ -84,6 +99,8 @@ setMethod("tau", "HmmOptionList", function(object) object@tau)
 setMethod("a2n", "HmmOptionList", function(object) object@a2n)
 setMethod("n2a", "HmmOptionList", function(object) object@n2a)
 setMethod("a2a", "HmmOptionList", function(object) object@a2a)
+setMethod("markerIndex", "HmmOptionList", function(object) object@marker.index)
+setMethod("sampleIndex", "HmmOptionList", function(object) object@sample.index)
 
 
 ##setMethod("initialize", signature(.Object="HmmOptionList"),

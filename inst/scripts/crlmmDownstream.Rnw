@@ -1,10 +1,10 @@
-%\VignetteIndexEntry{crlmmDownstream Vignette}
-%\VignetteKeywords{copy number, SNP, hidden Markov model}
+%\VignetteIndexEntry{CrlmmDownstream Vignette}
+%\VignetteKeywords{copy number, genotype, SNP}
 %\VignettePackage{VanillaICE}
 \documentclass{article}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage{natbib}
+\usepackage[numbers]{natbib}
 \usepackage{color}
 \usepackage[margin=1in]{geometry}
 
@@ -13,153 +13,176 @@
 \newcommand{\Rpackage}[1]{\textit{#1}}
 \newcommand{\Rfunction}[1]{\texttt{#1}}
 \newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{\Robject{#1}}
 \newcommand{\R}{\textsf{R}}
+\newcommand{\hmmoptions}{\Robject{HmmOptions}}
+\newcommand{\hmmparam}{\Robject{HmmParameter}}
 \newcommand{\crlmm}{\Rpackage{crlmm}}
+\newcommand{\oligo}{\Rpackage{oligo}}
 
-\title{A hidden Markov model for CRLMM output}
-\author{Robert Scharpf}
+\newcommand{\cne}{\widehat{\text{CN}}}
+\newcommand{\gte}{\widehat{\text{GT}}}
+\newcommand{\gtehom}{\widehat{\text{HOM}}}
+\newcommand{\gtehet}{\widehat{\text{HET}}}
+\newcommand{\pgte}{\text{S}_{\widehat{\text{\tiny GT}}}}
+\newcommand{\pcne}{\text{S}_{\widehat{\text{\tiny CN}}}}
+\newcommand{\pgtehom}{\text{S}_{\widehat{\text{\tiny HOM}}}}
+\newcommand{\pgtehet}{\text{S}_{\widehat{\text{\tiny HET}}}}
+\newcommand{\thom}{\text{HOM}}
+\newcommand{\thet}{\text{HET}}
+\newcommand{\bDelta}{\mbox{\boldmath $\Delta$}}
+\newcommand{\real}{\mbox{$\mathbb R$}}      % real numbers
+\newcommand{\bnu}{\mbox{\boldmath $\nu$}}
+\newcommand{\ice}{\Rpackage{VanillaICE}}
 
 \begin{document}
+\title{A hidden Markov model for SNP arrays processed with \crlmm{}}
+\author{Robert Scharpf}
 \maketitle
 
-See the \texttt{copynumber.Rnw} vignette in \texttt{crlmm/inst/scripts}
-for additional information on locus-level estimation of copy number.
-
-<<crlmm>>=
-library(IRanges)
+<<loadCnSet>>=
 library(VanillaICE)
-library(crlmm)
-celFiles <- list.celfiles("/thumper/ctsa/snpmicroarray/hapmap/raw/affy/1m", full.names=TRUE, pattern=".CEL")
-batch <- substr(basename(celFiles), 13, 13)
-celFiles <- celFiles[batch=="C" | batch=="Y"]
-batch <- batch[batch == "C" | batch == "Y"]
-cnOpts <- cnOptions(cdfName="genomewidesnp6",
-		    outdir="/thumper/ctsa/beaty/scharpf/crlmmOut/hapmap",
-		    batch=batch, chromosome=21)
-if(!file.exists(file.path(cnOpts[["outdir"]], "cnSet_21.rda"))){
-	message("Processing ...")
-	##trace(nuphiAllele, browser)
-	crlmmCopynumber(celFiles, cnOpts)
-} else {
-	if(!exists("cnSet")){
-		message("Loading ...")
-		load(file.path(cnOpts[["outdir"]], "cnSet_21.rda"))
-	}
-	cols <- grep("nuA_", fvarLabels(cnSet))
-}
-@ 
+library(HapmapCrlmmAffySet)
+library(RColorBrewer)
+if(!exists("hapmapSet")) data(hapmapSet)
+class(hapmapSet)
+dim(hapmapSet)
+@
 
-Remove loci for which there are missing values for the linear model
-parameters.
+<<echo=FALSE>>=
+setCacheDir("/nexsan2/disk3/rscharpf/VanillaICE")
+@
 
-<<removeNAs>>=
-cnSet <- cnSet[rowSums(is.na(fData(cnSet)[, cols])) == 0, ]
-@ 
+\section{Small to moderate size datasets}
 
-Compute transition and emission probabilities using the
-\Rfunction{hmmOptions}.
+For smaller datasets (e.g, fewer than 100 samples), it may be
+preferable to coerce the object of class \Rclass{CNSet} to a
+\Rclass{oligoSnpSet} prior to fitting the HMM.  The predictions from
+the HMM can then be visualized along side the marker-level estimates
+of copy number from \Rpackage{crlmm}.
 
-<<hmmOptions>>=
-initialPr <- c((1-0.99)/3, (1-0.99)/3, 0.99, (1-0.99)/3)
-if(!exists("hmmOpts")){
-	hmmOpts <- hmmOptions(cnSet, 
-			      copynumberStates=0:3,
-			      log.initial=log(initialPr),
-			      states=c("hom-del", "hem-del", "normal", "amp"),
-			      normalIndex=3)
-} 
-@ 
+Coercion of a \Rclass{CNSet} object to an \Rclass{oligoSnpSet} object
+is illustrated in the following code chunk.  This coercion is not
+instantaneous as it may involve reading data from disk (if the
+\Robject{assayData} elements of the \Rclass{CNSet} object are
+\Rclass{ff}-derived objects), and computing the allele-specific
+estimates of copy number.
 
-The \R{} function \Rfunction{hmm} returns an object of class
-\Robject{RangedData} with start and end coordinates of the state path
-obtained from the Viterbi algorithm.  The log likelihood ratio (LLR)
-compares the log likelihood of the predicted state sequence to the null
-(normal copy number).
+<<coerce,cache=TRUE>>=
+oligoSet <- as(hapmapSet, "oligoSnpSet")
+@
 
-<<hmm>>=
-if(!any(is.na(hmmOpts[["log.emission"]]))){
-	if(!file.exists(file.path(cnOpts[["outdir"]], "fit_hmm.rda"))){
-		fit <- hmm(cnSet, hmmOpts)	
-		save(fit, file=file.path(cnOpts[["outdir"]], "fit_hmm.rda"))
-	} else{
-		if(!exists("fit")){
-			load(file.path(cnOpts[["outdir"]], "fit_hmm.rda"))
-		}
-	}
-	fit
-}
-@ 
+<<gc, echo=FALSE>>=
+rm(hapmapSet); gc()
+@
 
-%The following code chunk calculates the frequency of amplifications and
-%deletions at each locus. Shaded regions above the zero line in Figure
-%\ref{fig:hmm_hapmap} display the frequency of amplifications, whereas
-%shaded regions below the zero line graphically display the frequency of
-%hemizygous or homozygous deletions.
-%
-%<<hmm_hapmap, fig=TRUE, include=FALSE, width=8, height=7>>=
-%require(SNPchip)
-%library(RColorBrewer)
-%numberUp <- rowSums(hmmPredictions > 3, na.rm=TRUE)
-%numberDown <- -rowSums(hmmPredictions < 3, na.rm=TRUE)
-%poly.cols <- brewer.pal(7, "Accent")
-%alt.brks <- brks[brks[, "state"] != "copy.number_2", ]
-%op <- par(ask=FALSE)
-%ylim <- c(min(numberDown)-5, max(numberUp)+5)
-%xlim <- c(10*1e6, max(position(crlmmSetList)))
-%plot(position(crlmmSetList), rep(0, nrow(crlmmSetList[[1]])),
-%     type="n", xlab="Physical position (Mb)",
-%     ylim=ylim,
-%     xlim=xlim,
-%     ylab="frequency", main="Chr 22",
-%     xaxt="n",
-%     xaxs="r")
-%axis(1, at=pretty(xlim), labels=pretty(xlim)/1e6)
-%polygon(x=c(position(crlmmSetList), rev(position(crlmmSetList))),
-%	y=c(rep(0, nrow(crlmmSetList[[1]])), rev(numberUp)),
-%	col=poly.cols[3], border=poly.cols[3])
-%polygon(x=c(position(crlmmSetList), rev(position(crlmmSetList))),
-%	y=c(rep(0, nrow(crlmmSetList[[1]])), rev(numberDown)),
-%	col=poly.cols[5], border=poly.cols[5])
-%##plotCytoband(22, xlim=xlim, new=FALSE,
-%##	     label.cytoband=FALSE,
-%##	     cytoband.ycoords=c(-10, -8), xaxs="r")
-%
-%medLength <- round(median(alt.brks[, "nbases"]), 2)
-%medMarkers <- median(alt.brks[, "nprobes"])
-%sdMarkers <- round(mad(alt.brks[, "nprobes"]), 2)
-%sdsLength <- round(mad(alt.brks[, "nbases"]), 2)
-%legend("topright",
-%       bty="n",
-%       legend=c(paste("median length:", medLength, "(bp)"),
-%       paste("MAD length:", sdsLength, "(bp)"),
-%       paste("median # markers:", medMarkers),
-%       paste("MAD # markers:", sdMarkers)),
-%       cex=0.8, ncol=2)
-%legend("topleft",
-%       fill=poly.cols[c(3, 5)],
-%       legend=c("amplifications", "deletions"), bty="n")
-%par(op)
-%gc()
-%@ 
-%
-%\begin{figure}
-%  \centering
-%  \includegraphics[width=\textwidth]{copynumber-hmm_hapmap}
-%  \caption{\label{fig:hmm_hapmap} The frequency of amplifications in the
-%    hapmap samples is displayed above the zero line.  The frequency of
-%    hemizygous or homozygous deletions are displayed below the zero
-%    line.}
-%\end{figure}
+<<boxplot,fig=TRUE,width=8,height=6>>=
+##plot the data for a random subset of samples
+sample.index <- sample(1:ncol(oligoSet), 20)
+par(las=1)
+boxplot(data.frame(copyNumber(oligoSet)[, sample.index]), boxwex=0.5, col="green3",
+	pch=".", border="grey60", xaxt="n")
+par(las=0)
+axis(1, at=seq_along(sample.index), labels=sampleNames(oligoSet)[sample.index])
 
+box(col="grey")
+@
+
+<<checkSNR, fig=TRUE>>=
+snr <- oligoSet$SNR[]
+mads <- apply(copyNumber(oligoSet), 2, mad, na.rm=TRUE)
+par(las=1)
+graphics:::plot(mads, 1/snr, pch=21, cex=0.8, bg="grey70")
+abline(h=1/5, lty=2, col="grey")
+@
+
+Note that 1/SNR is proportional to the sample-level MAD.  Calculate
+the MAD for each marker and shrink to the sample-level MAD.
+
+<<sds,cache=TRUE>>=
+sds <- VanillaICE:::robustSds2(copyNumber(oligoSet), DF.PRIOR=10)
+@
+
+<<sdshist,fig=TRUE>>=
+hist(sds, col="lightblue", breaks=200)
+@
+
+<<>>=
+cnConfidence(oligoSet) <- 1/sds
+@
+
+<<clean>>=
+suppressWarnings(rm(sds, mads, snr, sample.index)); gc()
+@
+
+
+<<center>>=
+oligoSet <- VanillaICE:::centerCopyNumber(oligoSet, at=2)
+@
+
+<<hmmOpts>>=
+hmmOpts <- VanillaICE:::newHmmOptionList(object=oligoSet, verbose=1L)
+@
+
+<<hmm, cache=TRUE>>=
+fit <- hmm2(oligoSet, hmmOpts)
+@
+
+<<coerce2RangedDataCn>>=
+fit <- as(fit, "RangedDataCn")
+@
+
+Visualizing the results:
+
+<<plotForRangedDataCn>>=
+fig <- plot(fit, hmmOpts, show.coverage=FALSE)
+fig$x.scales[["tick.number"]] <- 20
+@
+
+<<rectanglefig,fig=TRUE, width=8, height=8>>=
+print(fig)
+@
+
+TODO: show how the color scheme could be modified.
+
+TODO: plot method for low level data that uses locus zoom
+
+\section{Large datasets}
+
+Idea: define hmm2 method for CNSet. Coersion to oligoSnpSet inside of
+for loop.  Center and compute sds as before.  Extend to allow
+parallelization.
+
+<<clean, echo=FALSE>>=
+suppressWarnings(rm(oligoSet, fit, res.altered, palette, df)); gc()
+@
+
+<<reloadHapmap>>=
+if(!exists("hapmapSet")) data(hapmapSet)
+@
+
+<<hmmCNSet,cache=TRUE>>=
+fit2 <- hmm2(hapmapSet, hmmOpts)
+@
+
+TODO: test that it works for ff objects.
+
+<<coercion2RangedDataCn>>=
+fit2 <- as(fit2, "RangedDataCn")
+@
+
+<<plotmethod>>=
+fig <- plot(fit2, hmmOpts, show.coverage=FALSE)
+fig$x.scales[["tick.number"]] <- 20
+@
+
+<<rectangelfig2,fig=TRUE,width=8,height=8>>=
+print(fig)
+@
 
 \section{Session Information}
-
-The version number of R and packages loaded for generating the vignette
-were:
-
-<<echo=FALSE, results=tex>>=
+<<sessionInfo,results=tex>>=
 toLatex(sessionInfo())
-@  
-
+@
 
 \end{document}
