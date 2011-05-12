@@ -170,7 +170,6 @@ physical position.
 <<logscale>>=
 copyNumber(oligoSet) <- log2(copyNumber(oligoSet))
 oligoSet <- oligoSet[order(chromosome(oligoSet), position(oligoSet)), ]
-##trace(hmm.setup, browser)
 hmmOpts <- hmm.setup(oligoSet,
 		     copynumberStates=log2(c(1, 2, 2, 3)),
 		     states=c("hem-del", "ROH", "normal", "amp"),

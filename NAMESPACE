@@ -3,9 +3,9 @@ importClassesFrom(methods, ANY, character, data.frame, "function", integer, matr
 importMethodsFrom(methods, initialize, show)
 importMethodsFrom(Biobase, sampleNames)
 importFrom(methods, "@<-", callNextMethod, new, validObject)
-importFrom(graphics, plot)
+##importFrom(graphics, plot)
 importFrom(stats, update)
 export(hmm.setup, robustSds)
-exportMethods("hmm", "nMarkers", "LLR", "state", "rd2df")
+exportMethods("hmm", "nMarkers", "LLR", "state", "rd2df", "plot")
 
 

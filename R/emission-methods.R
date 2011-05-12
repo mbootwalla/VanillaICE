@@ -39,13 +39,13 @@ calculateEmission.copynumber <- function(object, hmmOptions){
 }
 
 calculateEmission.copynumber2 <- function(object, hmmOptions, prOutlier=0.01){
-	cnStates <- hmmOptions[["copynumberStates"]]
-	verbose <- hmmOptions[["verbose"]]
-	states <- hmmOptions[["states"]]
-	is.log <- hmmOptions[["is.log"]]
+	cnStates <- copynumberStates(hmmOptions)##[["copynumberStates"]]
+	verbose <- verbose(hmmOptions)
+	states <- states(hmmOptions)#[["states"]]
+	is.log <- is.log(hmmOptions)#
 	fn <- featureNames(object)
 	S <- length(states)
-	CN <- assayData(object)[["copyNumber"]]
+	CN <- copyNumber(object)
 	if(any(rowSums(is.na(CN)) == ncol(CN))){
 		stop("Some rows have all missing values. Exclude these before continuing.")
 	}
@@ -81,14 +81,8 @@ calculateEmission.copynumber2 <- function(object, hmmOptions, prOutlier=0.01){
 						mean=as.numeric(cnStates)[k],
 						sd=as.numeric(sd)[k]) +
 			   prOutlier * dunif(cnvector, MIN.CN, MAX.CN)
-##		old.tmp[k] <- dnorm(x=cnvector,
-##				    mean=as.numeric(cnStates)[k],
-##				    sd=as.numeric(sd)[k])
 		emission.cn[, j, ] <- tmp
 	}
-	dimnames(emission.cn) <- list(featureNames(object),
-				      sampleNames(object),
-				      states)
 	return(log(emission.cn))
 }
 
@@ -255,17 +249,17 @@ setMethod("calculateEmission", "SnpSet",
 ##})
 
 calculateEmission.genotype <- function(object, hmmOptions){
-	states <- hmmOptions[["states"]]
-	p <- hmmOptions[["prGenotypeHomozygous"]]
-	prGenotypeMissing <- hmmOptions[["prGenotypeMissing"]]
-	verbose <- hmmOptions[["verbose"]]
+	states <- states(hmmOptions)
+	p <- prGtHom(hmmOptions)
+	prGenotypeMissing <- prGtMis(hmmOptions)
+	verbose <- verbose(hmmOptions)
 	stopifnot(length(p) == length(states))
 	if(!is.numeric(calls(object))) stop("genotypes must be integers (1=AA, 2=AB, 3=BB) or NA (missing)")
 	GT <- calls(object)
 	emission <- array(GT, dim=c(nrow(GT), ncol(GT), length(states)), dimnames=list(featureNames(object), sampleNames(object), states))
 	missingGT <- any(is.na(GT))
 	if(missingGT){
-		if(verbose) message("Some genotypes are NAs.  The default assumes that prGenotypeMissing is the same for each state -- see hmmOptions")
+		if(verbose==2) message("Some genotypes are NAs.  The default assumes that prGenotypeMissing is the same for each state -- see hmmOptions")
 	}
 	for(s in seq(along=states)){
 		tmp <- GT

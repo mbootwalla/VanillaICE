@@ -20,7 +20,11 @@ setClass("HmmOptionList",
 			prHomInNormal="numeric",
 			prHomInRoh="numeric",
 			rohStates="logical",
-			verbose="logical"))
+			n2a="numeric",
+			a2n="numeric",
+			a2a="numeric",
+			tau="numeric",
+			verbose="integer"))
 
 
 
@@ -28,7 +32,14 @@ setMethod("initialize", "HmmOptionList",
 	  function(.Object, ...){
 		  .Object <- callNextMethod()
 	  })
-setClass("data.frame.CN", contains="data.frame")
+
+setClass("DataFrameCN", representation(row.names="character",
+				       names="character"),
+	 contains="list")
+setMethod("dimnames", "DataFrameCN", function(x) list(x@row.names, names(x)))
+setMethod("dim", "DataFrameCN", function(x) c(length(x@row.names), length(x)))
+
+
 
 ##setClass("track", representation(x="numeric", y="numeric"))
 

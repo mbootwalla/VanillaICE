@@ -1,0 +1,168 @@
+%\VignetteIndexEntry{CrlmmDownstream Vignette}
+%\VignetteKeywords{copy number, genotype, SNP}
+%\VignettePackage{VanillaICE}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[numbers]{natbib}
+\usepackage{color}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{\texttt{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\R}{\textsf{R}}
+\newcommand{\hmmoptions}{\Robject{HmmOptions}}
+\newcommand{\hmmparam}{\Robject{HmmParameter}}
+\newcommand{\crlmm}{\Rpackage{crlmm}}
+\newcommand{\oligo}{\Rpackage{oligo}}
+
+\newcommand{\cne}{\widehat{\text{CN}}}
+\newcommand{\gte}{\widehat{\text{GT}}}
+\newcommand{\gtehom}{\widehat{\text{HOM}}}
+\newcommand{\gtehet}{\widehat{\text{HET}}}
+\newcommand{\pgte}{\text{S}_{\widehat{\text{\tiny GT}}}}
+\newcommand{\pcne}{\text{S}_{\widehat{\text{\tiny CN}}}}
+\newcommand{\pgtehom}{\text{S}_{\widehat{\text{\tiny HOM}}}}
+\newcommand{\pgtehet}{\text{S}_{\widehat{\text{\tiny HET}}}}
+\newcommand{\thom}{\text{HOM}}
+\newcommand{\thet}{\text{HET}}
+\newcommand{\bDelta}{\mbox{\boldmath $\Delta$}}
+\newcommand{\real}{\mbox{$\mathbb R$}}      % real numbers
+\newcommand{\bnu}{\mbox{\boldmath $\nu$}}
+\newcommand{\ice}{\Rpackage{VanillaICE}}
+
+\begin{document}
+\title{A hidden Markov model for SNP arrays processed with \crlmm{}}
+\author{Robert Scharpf}
+\maketitle
+
+<<loadCnSet>>=
+library(VanillaICE)
+library(HapmapCrlmmAffySet)
+if(!exists("hapmapSet")) data(hapmapSet)
+class(hapmapSet)
+dim(hapmapSet)
+@
+
+\section{Small to moderate size datasets}
+
+For smaller datasets (e.g, fewer than 100 samples), it may be
+preferable to coerce the object of class \Rclass{CNSet} to a
+\Rclass{oligoSnpSet} prior to fitting the HMM.  The predictions from
+the HMM can then be visualized along side the marker-level estimates
+of copy number from \Rpackage{crlmm}.
+
+Coercion of a \Rclass{CNSet} object to an \Rclass{oligoSnpSet} object
+is illustrated in the following code chunk.  This coercion is not
+instantaneous as it may involve reading data from disk (if the
+\Robject{assayData} elements of the \Rclass{CNSet} object are
+\Rclass{ff}-derived objects), and computing the allele-specific
+estimates of copy number.
+
+<<coerce,cache=TRUE>>=
+oligoSet <- as(hapmapSet, "oligoSnpSet")
+@
+
+<<gc, echo=FALSE>>=
+rm(hapmapSet); gc()
+@
+
+<<boxplot,fig=TRUE,width=8,height=6>>=
+##plot the data for a random subset of samples
+sample.index <- sample(1:ncol(oligoSet), 20)
+par(las=1)
+boxplot(data.frame(copyNumber(oligoSet)[, sample.index]), boxwex=0.5, col="green3",
+	pch=".", border="grey60", xaxt="n")
+par(las=0)
+axis(1, at=seq_along(sample.index), labels=sampleNames(oligoSet)[sample.index])
+
+box(col="grey")
+@
+
+<<checkSNR, fig=TRUE>>=
+snr <- oligoSet$SNR[]
+mads <- apply(copyNumber(oligoSet), 2, mad, na.rm=TRUE)
+par(las=1)
+graphics:::plot(mads, 1/snr, pch=21, cex=0.8, bg="grey70")
+abline(h=1/5, lty=2, col="grey")
+@
+
+Note that 1/SNR is proportional to the sample-level MAD.  Calculate
+the MAD for each marker and shrink to the sample-level MAD.
+
+<<sds,cache=TRUE>>=
+sds <- VanillaICE:::robustSds2(copyNumber(oligoSet), DF.PRIOR=10)
+@
+
+<<sdshist,fig=TRUE>>=
+hist(sds, col="lightblue", breaks=200)
+@
+
+<<>>=
+cnConfidence(oligoSet) <- 1/sds
+@
+
+<<clean>>=
+suppressWarnings(rm(sds, mads, snr, sample.index)); gc()
+@
+
+
+<<center>>=
+copyNumber(oligoSet) <- VanillaICE:::center(copyNumber(oligoSet), at=2)
+@
+
+<<hmmOpts>>=
+hmmOpts <- VanillaICE:::newHmmOptionList(snpsetClass=class(oligoSet), verbose=1L)
+@
+
+<<hmm, cache=TRUE>>=
+fit <- VanillaICE:::hmm2(oligoSet, hmmOpts)
+@
+
+<<coerce2RangedDataCn>>=
+fit <- as(fit, "RangedDataCn")
+@
+
+Visualizing the results:
+
+<<results>>=
+fig <- plot(fit, hmmOpts, show.coverage=FALSE)
+fig$x.scales[["tick.number"]] <- 20
+@
+
+<<rectanglefig,fig=TRUE>>=
+print(fig)
+@
+
+\section{Large datasets}
+
+Idea: define hmm2 method for CNSet. Coersion to oligoSnpSet inside of
+for loop.  Center and compute sds as before.  Extend to allow
+parallelization.
+
+<<clean, echo=FALSE>>=
+showWarnings(rm(oligoSet, fit, res.altered, palette, df)); gc()
+@
+
+<<reloadHapmap>>=
+if(!exists("hapmapSet")) data(hapmapSet)
+@
+
+<<hmmCNSet,cache=TRUE>>=
+fit2 <- VanillaICE:::hmm2(hapmapSet, hmmOpts, centerCN=TRUE)
+@
+
+<<coercion2RangedDataCn>>=
+fit2 <- as(fit2, "RangedDataCn")
+@
+
+<<figure>>=
+plot(fit2, xlim=c(0,145))
+@
+
+
+
+\end{document}

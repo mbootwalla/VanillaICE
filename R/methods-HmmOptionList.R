@@ -7,14 +7,18 @@ newHmmOptionList <- function(snpsetClass="oligoSnpSet",
 			     scaleSds=TRUE,
 			     log.initialPr=log(rep(1/length(states), length(states))),
 			     normalIndex=3L,
-			     prGtHom=numeric(), ##only used when ICE=FALSE
+			     prGtHom=c(1/3, 0.99, 0.7, 0.6, 0.6), ##only used when ICE=FALSE
 			     prGtMis=rep(1/length(states), length(states)), ##not applicable when ICE is TRUE (no NA's from crlmm genotypes)
 			     prHetCalledHom=0.001, ## ignored unless ICE is TRUE
 			     prHetCalledHet=0.995, ## ignored unless ICE is TRUE
 			     prHomInNormal=0.8,    ## ignored unless ICE is TRUE
 			     prHomInRoh=0.999, ## ignored unless ICE is TRUE
 			     rohStates=logical(), ## ignored unless ICE is TRUE
-			     verbose=TRUE,
+			     tau=1e8,
+			     a2n=1,
+			     n2a=1,
+			     a2a=1,
+			     verbose=2L,
 			     ...){
 	new("HmmOptionList",
 	    snpsetClass=snpsetClass,
@@ -33,8 +37,31 @@ newHmmOptionList <- function(snpsetClass="oligoSnpSet",
 	    prHomInNormal=prHomInNormal,
 	    prHomInRoh=prHomInRoh,
 	    rohStates=rohStates,
+	    tau=tau,
+	    a2n=a2n,
+	    n2a=n2a,
+	    a2a=a2a,
 	    verbose=verbose)
 }
+setValidity("HmmOptionList", function(object){
+	ice <- ICE(object)
+	if(!ice){
+		S <- length(states(object))
+		check <- S == length(prGtHom(object))
+		if(!check) return(FALSE)
+		check <- S == length(prGtMis(object))
+		if(!check) return(FALSE)
+		check <- S == length(copynumberStates(object))
+		if(!check) return(FALSE)
+		check <- S == length(log.initialPr(object))
+		if(!check) return(FALSE)
+		check <- sum(exp(log.initialPr(object))) == 1
+		if(!check) return(FALSE)
+	} else{
+		FALSE
+	}
+	TRUE
+})
 
 setMethod("snpsetClass", "HmmOptionList", function(object) object@snpsetClass)
 setMethod("copynumberStates", "HmmOptionList", function(object) object@copynumberStates)
@@ -43,6 +70,7 @@ setMethod("ICE", "HmmOptionList", function(object) object@ICE)
 setMethod("copyNumber", "HmmOptionList", function(object) object@copyNumber)
 setMethod("is.log", "HmmOptionList", function(object) object@is.log)
 setMethod("scaleSds", "HmmOptionList", function(object) object@scaleSds)
+setMethod("normalIndex", "HmmOptionList", function(object) object@normalIndex)
 setMethod("log.initialPr", "HmmOptionList", function(object) object@log.initialPr)
 setMethod("prGtHom", "HmmOptionList", function(object) object@prGtHom)
 setMethod("prGtMis", "HmmOptionList", function(object) object@prGtMis)
@@ -52,6 +80,10 @@ setMethod("prHomInNormal", "HmmOptionList", function(object) object@prHomInNorma
 setMethod("prHomInRoh", "HmmOptionList", function(object) object@prHomInRoh)
 setMethod("rohStates", "HmmOptionList", function(object) object@rohStates)
 setMethod("verbose", "HmmOptionList", function(object) object@verbose)
+setMethod("tau", "HmmOptionList", function(object) object@tau)
+setMethod("a2n", "HmmOptionList", function(object) object@a2n)
+setMethod("n2a", "HmmOptionList", function(object) object@n2a)
+setMethod("a2a", "HmmOptionList", function(object) object@a2a)
 
 
 ##setMethod("initialize", signature(.Object="HmmOptionList"),

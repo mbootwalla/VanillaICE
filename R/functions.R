@@ -119,30 +119,38 @@ getChromosomeArm <- function(object){
 
 viterbi <- function(object,
 		    hmm.params,
-		    verbose=TRUE,
-		    normal2altered=1,
-		    altered2normal=1,
-		    altered2altered=1,
-		    TAUP=1e8, ...){
-	log.E <- hmm.params[["log.emission"]]
+		    log.E, ...){
+		    ##verbose=TRUE,
+		    ##normal2altered=1,
+		    ##altered2normal=1,
+		    ##altered2altered=1,
+		    ##TAUP=1e8, ...){
+	##log.E <- hmm.params[["log.emission"]]
 	sns <- colnames(log.E)
 	if(is.null(sns)) stop("no dimnames for log.emission")
-	log.initial <- hmm.params[["log.initial"]]
+	##log.initial <- hmm.params[["log.initial"]]
+	log.initial <- log.initialPr(hmm.params)
+	verbose <- verbose(hmm.params)
+	normal2altered <- n2a(hmm.params)
+	altered2normal <- a2n(hmm.params)
+	altered2altered <- a2a(hmm.params)
 	##
 	if(normal2altered <= 0) stop("normal2altered must be > 0")
 	if(altered2normal <= 0) stop("altered2normal must be > 0")
 	if(altered2altered <= 0) stop("altered2altered must be > 0")
 	##
 	arm <- getChromosomeArm(object)
-	normalIndex <- hmm.params[["normalIndex"]]
+	normalIndex <- normalIndex(hmm.params)##[["normalIndex"]]
 	if(normalIndex < 1 | normalIndex > dim(log.E)[[3]]){
 		stop("normalIndex in hmm.params not valid")
 	}
+	TAUP <- tau(hmm.params)
 	c1 <- normal2altered
 	c2 <- altered2normal
 	c3 <- altered2altered
 	TT <- nrow(object)
-	states <- hmm.params[["states"]]
+	states <- states(hmm.params)##[["states"]]
+	names(log.initial) <- states
 	S <- length(states)
 	delta <- matrix(as.double(0), nrow=TT, ncol=S)
 	rangedData <- list()
@@ -191,7 +199,7 @@ viterbi <- function(object,
 			lP.A2N <- log((1-p)*c2) ##probability altered -> normal
 			lP.A2Astar <- log((1-p)*c3) ## probability altered -> different altered state
 			##For each seqment, compute the likelihood ratio
-			names(log.initial) <- hmm.params[["states"]]
+
 			for(k in seq(along=starts)){
 				##if(any(LLR < 0)) browser()
 				index <- start(rl)[k]:end(rl)[k]
@@ -322,7 +330,7 @@ viterbi <- function(object,
 				 state=state,
 				 numMarkers=numMarkers,
 				 LLR=LLR)
-	rangedData <- as(rangedData, "RangedDataCn")
+	##rangedData <- as(rangedData, "RangedDataCn")
 	return(rangedData)
 }
 
@@ -626,7 +634,7 @@ hmm.setup <- function(object,
 			med.normal <- copynumberStates[normalIndex]
 			delta <- abs(med-med.normal)
 			if(delta < 0.1){
-				if(verbose) message("The absolute difference between the median copy number and copynumberState[normalIndex] is ", abs(med-med.normal))
+				if(verbose==2) message("The absolute difference between the median copy number and copynumberState[normalIndex] is ", abs(med-med.normal))
 			} else {
 				warning("The absolute difference between the median copy number and copynumberState[normalIndex] is ", delta)
 			}

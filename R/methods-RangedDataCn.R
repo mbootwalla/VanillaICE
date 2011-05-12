@@ -22,14 +22,10 @@ setMethod("nMarkers", "RangedDataCn", function(object) object$numMarkers)
 setMethod("LLR", "RangedDataCn", function(object) object$LLR)
 setMethod("state", "RangedDataCn", function(object) object$state)
 
-setMethod("rd2df", "RangedDataCn", function(object, palette, ...){
-	isAmp <- state(object) > 3
-	isHom <- state(object) == 1
-	isHem <- state(object) == 2
-	cols <- rep(NA, nrow(object))
-	cols[isHom] <- palette[1]
-	cols[isHem] <- palette[2]
-	cols[isAmp] <- palette[3]
+setMethod("rd2df", "RangedDataCn", function(object, hmm.params, ...){
+	require(SNPchip)
+	data(chromosomeAnnotation)
+	object <- object[object$state != normalIndex(hmm.params), ]
 	h <- 0.75
 	meanSegment <- apply(cbind(start(object), end(object)), 1, mean)
 	data(chromosomeAnnotation)
@@ -57,87 +53,90 @@ setMethod("rd2df", "RangedDataCn", function(object, palette, ...){
 			  midpoint=meanSegment/1e6,
 			  id=sampleNames(object),
 			  chr.size=chr.size/1e6,
-			  col=cols,
+			  border=rep("black", nrow(object)),
+			  col=as.integer(as.factor(state(object))),
+			  state=state(object),
 			  y=y,
 			  stringsAsFactors=FALSE)
 	dat$chr <- as.factor(dat$chr)
-	dat <- as(dat, "data.frame.CN")
+	dat <- new("DataFrameCN", dat)
 	return(dat)
 })
 
 
+setMethod("plot", signature(object="RangedDataCn", hmm.params="HmmOptionList"),
+	  function(object, hmm.params, ...){
+		  df <- rd2df(object, hmm.params)
+		  plot(object=df, ...)
+	  })
 
-setMethod("plot", signature(x="RangedDataCn"), function(x, y, palette, border="black",
-			    labelAllSamples=TRUE,
-			    show.coverage=TRUE,
-			    sampleLabels.cex=0.5, ...){
-	df <- rd2df(x, palette=palette)
-	plot(df, palette=palette, border=border, labelAllSamples=labelAllSamples,
-	     show.coverage=show.coverage,
-	     sampleLabels.cex=sampleLabels.cex, ...)
-})
-setMethod("plot", signature(x="data.frame.CN"), function(x, y, palette, border="black",
-			    labelAllSamples=TRUE,
-			    show.coverage=TRUE,
-			    sampleLabels.cex=0.5, ...){
-	stopifnot(length(unique(df$chr))==1)
-	mykey <- simpleKey(c("homo-del", "hemi-del", "amp")[palette %in% df$col], points=FALSE,
-			   rectangles=TRUE, col=palette[palette %in% df$col], space="top")
-	mykey$rectangles[["border"]] <- mykey$rectangles[["col"]] <- palette[palette %in% df$col]
-	if(border=="black") border <- rep("black", nrow(df)) else border <- df$col
-	if(labelAllSamples) {
-		labels <- df$id
-		ticks.at <- df$y
-	} else {
-		labels <- FALSE
-		ticks.at <- pretty(df$y)
-	}
-	fig <- xyplot(y~midpoint, data=df,
-		      panel=function(x, y, x0, x1, chr.size,
-		      col, border, coverage, chr, show.coverage=TRUE, max.y,
-		      ..., subscripts){
-			      panel.grid(h=-1, v=10)
-			      panel.xyplot(x, y, ..., subscripts)
-			      h <- 0.75
-			      lrect(xleft=x0[subscripts],
-				    xright=x1[subscripts],
-				    ybottom=y-h/2,
-				    ytop=y+h/2,
-				    border=border[subscripts],
-				    col=col[subscripts], ...)
-			      if(show.coverage)
-				      ltext(x, y,labels=coverage[subscripts], cex=0.6)
-			      ##plot centromere
-			      chr <- unique(as.integer(as.character(df$chr)))
-			      coords <- chromosomeAnnotation[chr, 1:2]/1e6
-			      lrect(xleft=coords[1],
-				    xright=coords[2],
-				    ybottom=0,
-				    ytop=max.y+h/2,
-				    col="grey",
-				    border="grey")
-		      },
-		      x0=df$x0,
-		      x1=df$x1,
-		      col=df$col,
-		      border=border,
-		      alpha=1,
-		      chr.size=df$chr.size,
-		      scales=list(y=list(labels=labels, at=ticks.at, cex=sampleLabels.cex)),
-		      coverage=df$coverage,
-		      xlab="Mb",
-		      ylab="offspring index",
-		      show.coverage=show.coverage,
-		      key=mykey,
-		      par.strip.text=list(lines=0.7, cex=0.6),
-		      prepanel=prepanel.fxn,
-		      max.y=max(df$y), ...)
-	##axis=function(side, text.cex){
-	##panel.axis(side, text.cex=text.cex)}, ...)
-	return(fig)
-})
+setMethod("plot", signature(object="DataFrameCN", hmm.params="missing"),
+	  function(object, ...){
+		  palette <- brewer.pal(3, "Set2")
+		  df <- as.data.frame(object@.Data)
+		  colnames(df) <- names(object)##, "data.frame")
+		  df$x <- df$midpoint
+		  fig <- xyplot(y~x, data=df,
+				panel=my.xypanel,
+				x0=df$x0,
+				x1=df$x1,
+				col=df$col,
+				border=df$border,
+				alpha=1,
+				chr=df$chr,
+				chr.size=df$chr.size,
+				##scales=list(y=list(labels=labels, at=ticks.at, cex=sampleLabels.cex)),
+				coverage=df$coverage,
+				xlab="Mb",
+				ylab="offspring index",
+				##show.coverage=show.coverage,
+				key=getKey(df),
+				par.strip.text=list(lines=0.7, cex=0.6),
+				prepanel=prepanel.fxn,
+				max.y=max(df$y), ...)
+		  ##axis=function(side, text.cex){
+		  ##panel.axis(side, text.cex=text.cex)}, ...)
+		  return(fig)
+	  })
 
-prepanel.fxn <- function(x,y, chr, chr.size, ..., subscripts){
+getKey <- function(df){
+	states <- unique(df$state)
+	col <- df$col[match(states, df$state)]
+	mykey <- simpleKey(c("homo-del", "hemi-del", "normal", "single-dup", "double-dup")[states], points=FALSE,
+			   rectangles=TRUE, col=col, space="top")
+	mykey$rectangles[["border"]] <- mykey$rectangles[["col"]] <- col
+	mykey
+}
+
+my.xypanel <- function(x, y,
+		       x0, x1, chr.size,
+		       col, border, coverage,
+		       chr, show.coverage=TRUE,
+		       max.y,
+		       ..., subscripts){
+	panel.grid(h=-1, v=10)
+	panel.xyplot(x, y, ..., subscripts)
+	h <- 0.75
+	lrect(xleft=x0[subscripts],
+	      xright=x1[subscripts],
+	      ybottom=y-h/2,
+	      ytop=y+h/2,
+	      border=border[subscripts],
+	      col=col[subscripts], ...)
+	if(show.coverage)
+		ltext(x, y,labels=coverage[subscripts], cex=0.6)
+	##plot centromere
+	chr <- unique(as.integer(as.character(df$chr)))
+	coords <- chromosomeAnnotation[chr, 1:2]/1e6
+	lrect(xleft=coords[1],
+	      xright=coords[2],
+	      ybottom=0,
+	      ytop=max.y+h/2,
+	      col="grey",
+	      border="grey")
+}
+
+prepanel.fxn <- function(x,y, chr.size, ..., subscripts){
 	list(xlim=c(0, unique(chr.size[subscripts])), ylim=range(as.integer(as.factor(y[subscripts]))))
 }
 
