@@ -1,5 +1,5 @@
 All: CrlmmDownstream
 
-CrlmmDownstream: CrlmmDownstream.tex
+CrlmmDownstream: CrlmmDownstream.Rnw
 	cp ../scripts/CrlmmDownstream.pdf .
 

@@ -7,6 +7,8 @@ setGeneric("rangedData", function(object) standardGeneric("rangedData"))
 setGeneric("rangedData<-", function(object, value) standardGeneric("rangedData<-"))
 setGeneric("segmentData", function(object) standardGeneric("segmentData"))
 setGeneric("segmentData<-", function(object, value) standardGeneric("segmentData<-"))
+
+##RangedDataCn generics
 setGeneric("LLR", function(object) standardGeneric("LLR"))
 setGeneric("nMarkers", function(object) standardGeneric("nMarkers"))
 setGeneric("state", function(object) standardGeneric("state"))

@@ -4,7 +4,6 @@
 \documentclass{article}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage[numbers]{natbib}
 \usepackage{color}
 \usepackage[margin=1in]{geometry}
 
@@ -72,7 +71,7 @@ estimates of copy number.
 oligoSet <- as(hapmapSet, "oligoSnpSet")
 @
 
-<<gc, echo=FALSE>>=
+<<gc, results=hide, echo=FALSE>>=
 rm(hapmapSet); gc()
 @
 
@@ -84,7 +83,6 @@ boxplot(data.frame(copyNumber(oligoSet)[, sample.index]), boxwex=0.5, col="green
 	pch=".", border="grey60", xaxt="n")
 par(las=0)
 axis(1, at=seq_along(sample.index), labels=sampleNames(oligoSet)[sample.index])
-
 box(col="grey")
 @
 
@@ -107,11 +105,11 @@ sds <- VanillaICE:::robustSds2(copyNumber(oligoSet), DF.PRIOR=10)
 hist(sds, col="lightblue", breaks=200)
 @
 
-<<>>=
+<<cnConfidence>>=
 cnConfidence(oligoSet) <- 1/sds
 @
 
-<<clean>>=
+<<clean,echo=FALSE,results=hide>>=
 suppressWarnings(rm(sds, mads, snr, sample.index)); gc()
 @
 
