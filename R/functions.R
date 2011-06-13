@@ -38,10 +38,13 @@ robustSds <- function(x, takeLog=FALSE, ...){
 ##
 ## But if we estimate emission probabilities using a mixture of
 ## normals and a uniform for the outlier distribution, we may be ok.
-robustSds2 <- function(x, DF.PRIOR=10, takeLog=FALSE, ...){
+robustSds2 <- function(x, DF.PRIOR=10, nSamples, takeLog=FALSE, ...){
 	if(!is.matrix(x)) stop("x is not a matrix")
 	if(takeLog) x <- log2(x)
 	sds1 <- rowMAD(x, na.rm=TRUE)
+	df1 <- nSamples-1
+	df2 <- length(sds1)-1
+	sds.marker <- (df1*sds.marker + df2*median(sds.marker,na.rm=TRUE))/(df1+df2)
 	sds1 <- matrix(sds1, nrow(x), ncol(x))
 	sds2 <- apply(x, 2, "mad", constant=2, na.rm=TRUE)
 	df <- ncol(x)
